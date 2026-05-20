@@ -1,0 +1,59 @@
+@model IEnumerable<SalonHair.Models.Product>
+
+@{
+    ViewData["Title"] = "Quản lý Kho Sản phẩm";
+}
+
+<div class="container-fluid py-4">
+    <div class="card bg-dark border-gold-card shadow-lg overflow-hidden">
+        <div class="card-header bg-dark border-bottom border-warning d-flex justify-content-between align-items-center py-3 px-4">
+            <h4 class="mb-0 text-warning fw-bold"><i class="bi bi-box me-2"></i>QUẢN LÝ KHO SẢN PHẨM SHOP</h4>
+            <a asp-action="Create" class="btn btn-warning btn-sm fw-bold shadow-sm px-3">
+                <i class="bi bi-plus-lg me-1"></i> THÊM MỚI
+            </a>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-dark table-hover mb-0 custom-admin-table align-middle">
+                    <thead>
+                        <tr class="bg-black text-warning small text-uppercase fw-bold">
+                            <th class="ps-4">Hình ảnh</th>
+                            <th>Tên sản phẩm</th>
+                            <th>Giá bán</th>
+                            <th class="text-center pe-4">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="ps-4">
+                                    <img src="@item.ImageUrl" style="width: 50px; height: 50px; object-fit: cover;" class="rounded" onerror="this.src='https://via.placeholder.com/50'"/>
+                                </td>
+                                <td class="fw-bold text-light">@item.Name</td>
+                                <td class="text-success fw-bold">@item.Price.ToString("N0") đ</td>
+                                <td class="text-center pe-4">
+                                    <div class="btn-group shadow-sm">
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-warning btn-sm" title="Sửa">
+                                            <i class="bi bi-pencil-square"></i> Sửa
+                                        </a>
+                                        <form asp-action="Delete" asp-route-id="@item.Id" method="post" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?');">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm" title="Xóa">
+                                                <i class="bi bi-trash"></i> Xóa
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .border-gold-card { border: 1px solid rgba(212, 175, 55, 0.3) !important; }
+    .custom-admin-table tbody tr { border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+</style>

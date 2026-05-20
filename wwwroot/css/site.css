@@ -1,0 +1,665 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300..900;1,300..900&family=Plus+Jakarta+Sans:wght@300..700&display=swap');
+
+/* BẢNG MÀU CHUẨN CATALOGUE (BLACK & GOLD) */
+:root {
+    --bg-dark: #0a0a0a; /* Đen nền */
+    --card-dark: #141414; /* Đen thẻ */
+    --gold-primary: #D4AF37; /* Vàng kim */
+    --gold-hover: #f1c40f; /* Vàng sáng khi di chuột */
+    --text-white: #ffffff;
+    --font-body: 'Plus Jakarta Sans', sans-serif;
+    --font-display: 'Montserrat', sans-serif;
+}
+
+/* Giao diện chung */
+body.bg-salon {
+    background-color: var(--bg-dark);
+    color: var(--text-white);
+    font-family: var(--font-body);
+}
+
+/* Thanh Menu sang trọng */
+.navbar {
+    background-color: #000000 !important;
+    border-bottom: 2px solid var(--gold-primary) !important;
+    padding: 15px 0;
+}
+
+.gold-text {
+    color: var(--gold-primary) !important;
+    text-shadow: 0 0 5px rgba(212, 175, 55, 0.3);
+}
+
+.nav-link:hover {
+    color: var(--gold-hover) !important;
+    transition: 0.3s;
+}
+
+/* Nút bấm vàng kim chữ đen */
+.btn-primary, .btn-success, .btn-dark, button[type="submit"] {
+    background-color: var(--gold-primary) !important;
+    border: none !important;
+    color: #000 !important;
+    font-weight: bold !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-radius: 2px;
+}
+
+    .btn-primary:hover {
+        background-color: var(--gold-hover) !important;
+        box-shadow: 0 0 15px var(--gold-primary);
+    }
+
+/* Các ô nhập liệu Form */
+.form-control, .form-select {
+    background-color: #1a1a1a !important;
+    border: 1px solid #333 !important;
+    color: white !important;
+}
+
+    .form-control:focus {
+        border-color: var(--gold-primary) !important;
+        box-shadow: 0 0 8px var(--gold-primary) !important;
+    }
+
+/* Thẻ hiển thị kiểu tóc / dịch vụ */
+.card {
+    background-color: var(--card-dark) !important;
+    border: 1px solid #222 !important;
+    border-top: 3px solid var(--gold-primary) !important;
+    transition: 0.4s;
+}
+
+    .card:hover {
+        transform: translateY(-10px);
+        border-color: var(--gold-primary);
+    }
+
+/* Chân trang */
+.footer {
+    background-color: #000;
+    border-top: 1px solid #222;
+}
+
+.app-flash-message {
+    position: relative;
+    border: 1px solid rgba(212, 175, 55, 0.28);
+    border-left: 4px solid var(--gold-primary);
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.18), rgba(32, 94, 60, 0.2));
+    color: #f7f7f7;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
+}
+
+.app-flash-message .bi-check-circle-fill {
+    color: #f3d678;
+}
+
+.app-flash-message .btn-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+}
+
+/* Tiêu đề trang */
+h1, h2, h3, h4, h5 {
+    color: var(--gold-primary);
+    font-weight: bold;
+}
+
+.home-landing {
+    color: var(--text-white);
+}
+
+.home-full-bleed {
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+}
+
+.home-shell {
+    width: min(1200px, calc(100vw - 32px));
+    margin: 0 auto;
+}
+
+.home-hero {
+    position: relative;
+    overflow: hidden;
+    padding: 48px 0 64px;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.18);
+    background:
+        radial-gradient(circle at top right, rgba(212, 175, 55, 0.2), transparent 30%),
+        linear-gradient(90deg, rgba(7, 7, 7, 0.96) 0%, rgba(7, 7, 7, 0.88) 42%, rgba(7, 7, 7, 0.7) 100%),
+        url('/images/banner-salon.jpg') center/cover no-repeat;
+}
+
+.home-hero::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 -1px 0;
+    height: 120px;
+    background: linear-gradient(to top, rgba(10, 10, 10, 1), rgba(10, 10, 10, 0));
+    pointer-events: none;
+}
+
+.home-eyebrow,
+.home-section__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 999px;
+    border: 1px solid rgba(212, 175, 55, 0.28);
+    background: rgba(212, 175, 55, 0.1);
+    color: #f3d678;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+.home-display {
+    margin-top: 22px;
+    margin-bottom: 18px;
+    color: #fff;
+    font-family: var(--font-display);
+    font-size: clamp(3rem, 8vw, 5.9rem);
+    font-weight: 700;
+    line-height: 1.25;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    text-shadow: 0 10px 32px rgba(0, 0, 0, 0.35);
+}
+
+.home-hero__lead {
+    max-width: 720px;
+    margin-bottom: 28px;
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 1.06rem;
+    line-height: 1.85;
+}
+
+.home-hero__actions,
+.home-cta-band__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+}
+
+.home-btn {
+    padding: 15px 24px;
+    border-radius: 16px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.home-btn:hover {
+    transform: translateY(-3px);
+}
+
+.home-btn--primary {
+    background: linear-gradient(135deg, #d4af37, #f5cf58);
+    border: none;
+    color: #111;
+    box-shadow: 0 18px 35px rgba(212, 175, 55, 0.22);
+}
+
+.home-btn--primary:hover {
+    color: #111;
+    box-shadow: 0 22px 40px rgba(212, 175, 55, 0.28);
+}
+
+.home-btn--ghost {
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: #fff;
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+}
+
+.home-btn--ghost:hover {
+    color: #fff;
+    border-color: rgba(212, 175, 55, 0.42);
+    background: rgba(212, 175, 55, 0.08);
+}
+
+.home-trust-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 34px;
+}
+
+.home-trust-card,
+.home-mini-card,
+.home-service-card,
+.home-story-card,
+.home-process-card,
+.home-testimonial-card {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(180deg, rgba(19, 19, 19, 0.96), rgba(10, 10, 10, 0.96));
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.28);
+}
+
+.home-trust-card {
+    min-height: 156px;
+    padding: 22px;
+    border-radius: 24px;
+    animation: homeFadeUp 0.7s ease both;
+}
+
+.home-trust-card__value {
+    display: inline-block;
+    margin-bottom: 12px;
+    color: #fff;
+    font-family: var(--font-display);
+    font-size: 1.45rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.home-trust-card p,
+.home-service-card p,
+.home-mini-card p,
+.home-story-card p,
+.home-process-step p,
+.home-testimonial-card p,
+.home-showcase__copy p,
+.home-section__heading p,
+.home-cta-band p {
+    margin-bottom: 0;
+    color: rgba(255, 255, 255, 0.72);
+    line-height: 1.8;
+}
+
+.home-showcase {
+    position: relative;
+    display: grid;
+    gap: 18px;
+}
+
+.home-showcase__media {
+    position: relative;
+    min-height: 420px;
+    padding: 24px;
+    border-radius: 32px;
+    overflow: hidden;
+    background:
+        linear-gradient(180deg, rgba(10, 10, 10, 0.08), rgba(10, 10, 10, 0.7)),
+        url('/images/banner-salon.jpg') center/cover no-repeat;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.35);
+}
+
+.home-showcase__media::before {
+    content: "";
+    position: absolute;
+    inset: 16px;
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: linear-gradient(180deg, rgba(10, 10, 10, 0.02), rgba(10, 10, 10, 0.46));
+}
+
+.home-showcase__badge,
+.home-mini-card__chip {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: rgba(10, 10, 10, 0.62);
+    border: 1px solid rgba(212, 175, 55, 0.38);
+    color: #f3d678;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.home-showcase__copy {
+    position: absolute;
+    right: 24px;
+    bottom: 24px;
+    left: 24px;
+    z-index: 1;
+    padding: 24px;
+    border-radius: 24px;
+    background: linear-gradient(180deg, rgba(10, 10, 10, 0.25), rgba(10, 10, 10, 0.82));
+    backdrop-filter: blur(8px);
+}
+
+.home-showcase__kicker {
+    margin-bottom: 10px !important;
+    color: #f3d678 !important;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.home-showcase__copy h2,
+.home-section__heading h2,
+.home-story-card h2,
+.home-process-card h2,
+.home-cta-band h2 {
+    margin-bottom: 14px;
+    color: #fff;
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 3.3rem);
+    line-height: 1.35;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.home-showcase__stack {
+    display: grid;
+    gap: 16px;
+}
+
+.home-photo-strip {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.home-photo-strip__item,
+.home-service-card__media,
+.home-lookbook-card {
+    overflow: hidden;
+    border-radius: 22px;
+}
+
+.home-photo-strip__item {
+    min-height: 140px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 16px 30px rgba(0, 0, 0, 0.24);
+}
+
+.home-photo-strip__item img,
+.home-service-card__media img,
+.home-lookbook-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.45s ease;
+}
+
+.home-photo-strip__item:hover img,
+.home-service-card:hover .home-service-card__media img,
+.home-lookbook-card:hover img {
+    transform: scale(1.05);
+}
+
+.home-mini-card {
+    padding: 24px;
+    border-radius: 24px;
+}
+
+.home-mini-card h3,
+.home-service-card h3,
+.home-testimonial-card strong {
+    margin-top: 16px;
+    margin-bottom: 10px;
+    color: #fff;
+    font-family: var(--font-display);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.home-section {
+    padding: 72px 0 12px;
+}
+
+.home-section--split {
+    padding-top: 52px;
+}
+
+.home-section__heading {
+    max-width: 760px;
+    margin-bottom: 30px;
+}
+
+.home-services-grid,
+.home-testimonials-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.home-service-card,
+.home-testimonial-card {
+    padding: 28px;
+    border-radius: 26px;
+    transition: transform 0.28s ease, border-color 0.28s ease;
+}
+
+.home-service-card__media {
+    height: 180px;
+    margin: -28px -28px 20px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.home-service-card:hover,
+.home-testimonial-card:hover,
+.home-mini-card:hover {
+    transform: translateY(-8px);
+    border-color: rgba(212, 175, 55, 0.4);
+}
+
+.home-service-card__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 58px;
+    height: 58px;
+    border-radius: 18px;
+    background: rgba(212, 175, 55, 0.12);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    color: #f3d678;
+    font-size: 1.4rem;
+}
+
+.home-inline-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 18px;
+    color: #f3d678;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.home-inline-link:hover {
+    color: #fff2bc;
+}
+
+.home-story-card,
+.home-process-card {
+    height: 100%;
+    padding: 32px;
+    border-radius: 28px;
+}
+
+.home-lookbook-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr;
+    gap: 18px;
+}
+
+.home-lookbook-card {
+    position: relative;
+    min-height: 260px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 22px 48px rgba(0, 0, 0, 0.28);
+}
+
+.home-lookbook-card--large {
+    min-height: 360px;
+}
+
+.home-lookbook-card__overlay {
+    position: absolute;
+    inset: auto 18px 18px 18px;
+    padding: 18px;
+    border-radius: 20px;
+    background: linear-gradient(180deg, rgba(10, 10, 10, 0.2), rgba(10, 10, 10, 0.86));
+    backdrop-filter: blur(8px);
+}
+
+.home-lookbook-card__overlay span {
+    display: inline-block;
+    margin-bottom: 8px;
+    color: #f3d678;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.home-lookbook-card__overlay h3 {
+    margin: 0;
+    color: #fff;
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    line-height: 1.05;
+    text-transform: uppercase;
+}
+
+.home-story-list {
+    display: grid;
+    gap: 16px;
+    margin-top: 26px;
+}
+
+.home-story-list__item,
+.home-process-step {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 16px;
+    padding: 18px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.home-story-list__item strong,
+.home-process-step strong {
+    display: block;
+    margin-bottom: 6px;
+    color: #fff;
+    font-size: 1.02rem;
+}
+
+.home-process-step span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    background: rgba(212, 175, 55, 0.12);
+    border: 1px solid rgba(212, 175, 55, 0.32);
+    color: #f3d678;
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+}
+
+.home-stars {
+    color: #f3d678;
+    letter-spacing: 4px;
+}
+
+.home-testimonial-card strong {
+    display: block;
+}
+
+.home-cta-band {
+    margin-top: 72px;
+    padding: 42px 0;
+    border-top: 1px solid rgba(212, 175, 55, 0.18);
+    background:
+        radial-gradient(circle at left center, rgba(212, 175, 55, 0.18), transparent 28%),
+        linear-gradient(90deg, rgba(16, 16, 16, 0.98), rgba(24, 24, 24, 0.98));
+}
+
+.home-cta-band__inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 28px;
+}
+
+@keyframes homeFadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 1199.98px) {
+    .home-trust-grid,
+    .home-services-grid,
+    .home-testimonials-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .home-lookbook-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .home-lookbook-card--large {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .home-hero {
+        padding-top: 30px;
+        padding-bottom: 40px;
+    }
+
+    .home-showcase__media {
+        min-height: 320px;
+    }
+
+    .home-showcase__copy,
+    .home-story-card,
+    .home-process-card,
+    .home-service-card,
+    .home-testimonial-card,
+    .home-mini-card,
+    .home-trust-card {
+        padding: 20px;
+    }
+
+    .home-trust-grid,
+    .home-services-grid,
+    .home-testimonials-grid,
+    .home-lookbook-grid,
+    .home-photo-strip {
+        grid-template-columns: 1fr;
+    }
+
+    .home-service-card__media {
+        height: 210px;
+        margin-left: -20px;
+        margin-right: -20px;
+        margin-top: -20px;
+    }
+
+    .home-process-step,
+    .home-story-list__item {
+        grid-template-columns: 1fr;
+    }
+
+    .home-process-step span {
+        width: 46px;
+        height: 46px;
+    }
+}

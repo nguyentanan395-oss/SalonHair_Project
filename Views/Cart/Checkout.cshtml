@@ -1,0 +1,46 @@
+@model SalonHair.Models.Order
+
+@{
+    ViewData["Title"] = "Thanh toán";
+}
+
+<h2 class="text-warning fw-bold mb-4"><i class="bi bi-wallet2"></i> Thông Tin Giao Hàng</h2>
+
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <div class="card bg-dark text-light border-0 shadow">
+            <div class="card-body p-4">
+                <form asp-action="Checkout">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="CustomerName" class="form-label text-warning fw-bold"></label>
+                        <input asp-for="CustomerName" class="form-control bg-secondary text-light border-0" placeholder="Nhập họ và tên..." />
+                        <span asp-validation-for="CustomerName" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Phone" class="form-label text-warning fw-bold"></label>
+                        <input asp-for="Phone" class="form-control bg-secondary text-light border-0" placeholder="Nhập số điện thoại..." />
+                        <span asp-validation-for="Phone" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label asp-for="Address" class="form-label text-warning fw-bold"></label>
+                        <textarea asp-for="Address" class="form-control bg-secondary text-light border-0" rows="3" placeholder="Nhập địa chỉ nhận hàng chi tiết..."></textarea>
+                        <span asp-validation-for="Address" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-warning btn-lg fw-bold"><i class="bi bi-check-circle"></i> Xác Nhận Đặt Hàng</button>
+                        <a asp-action="Index" class="btn btn-outline-light">Quay lại Giỏ hàng</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

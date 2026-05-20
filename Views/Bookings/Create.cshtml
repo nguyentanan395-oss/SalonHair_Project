@@ -1,0 +1,70 @@
+@model SalonHair.Models.Booking
+
+@{
+    ViewData["Title"] = "Tạo mới lịch hẹn";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card bg-dark border-gold-card shadow-lg">
+                <div class="card-header bg-warning text-dark py-3">
+                    <h3 class="mb-0 fw-bold"><i class="bi bi-calendar-plus me-2"></i> TẠO LỊCH HẸN MỚI</h3>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Create">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                        
+                        <div class="form-group mb-3">
+                            <label class="control-label fw-bold gold-text mb-2">Họ và Tên khách hàng</label>
+                            <input asp-for="CustomerName" class="form-control bg-black border-secondary text-light" placeholder="Nhập tên khách hàng..." />
+                            <span asp-validation-for="CustomerName" class="text-danger small"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label class="control-label fw-bold gold-text mb-2">Số điện thoại liên hệ</label>
+                            <input asp-for="Phone" class="form-control bg-black border-secondary text-light" placeholder="Ví dụ: 0912xxxxxx" />
+                            <span asp-validation-for="Phone" class="text-danger small"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label class="control-label fw-bold gold-text mb-2">Dịch vụ Salon</label>
+                            <select asp-for="ServiceId" class="form-control bg-black border-secondary text-light" asp-items="ViewBag.ServiceId">
+                                <option value="">-- Chọn dịch vụ làm tóc --</option>
+                            </select>
+                            <span asp-validation-for="ServiceId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label class="control-label fw-bold gold-text mb-2">Ngày và giờ hẹn</label>
+                            <input asp-for="BookingDate" type="datetime-local" class="form-control bg-black border-secondary text-light" />
+                            <span asp-validation-for="BookingDate" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-warning fw-bold py-2 shadow-sm">
+                                <i class="bi bi-check-circle me-1"></i> XÁC NHẬN TẠO MỚI
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-light btn-sm mt-2">
+                                <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách quản lý
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+
+<style>
+    .gold-text { color: #d4af37 !important; }
+    .border-gold-card { border: 1px solid rgba(212, 175, 55, 0.3) !important; }
+    .form-control:focus {
+        border-color: #d4af37 !important;
+        box-shadow: 0 0 10px rgba(212, 175, 55, 0.2) !important;
+    }
+</style>

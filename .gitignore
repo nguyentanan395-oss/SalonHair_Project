@@ -1,0 +1,11 @@
+[Bb]in/
+[Oo]bj/
+.vs/
+*.user
+*.suo
+.DS_Store
+wwwroot/lib/
+appsettings.json
+appsettings.Development.json
+*.db
+*.log

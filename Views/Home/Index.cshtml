@@ -1,0 +1,256 @@
+@{
+    ViewData["Title"] = "Trang chủ";
+}
+
+<div class="home-landing">
+    <section class="home-full-bleed home-hero">
+        <div class="home-shell">
+            <div class="row g-5 align-items-center">
+                <div class="col-xl-7">
+                    <span class="home-eyebrow">Salon Hair Luxury</span>
+                    <h1 class="home-display">Làm mới diện mạo theo chuẩn salon hiện đại</h1>
+                    <p class="home-hero__lead">
+                        Gọn hơn, mạnh hơn và nhìn “ra salon” hơn với khu hero rõ CTA, ảnh thật và các điểm chạm quan trọng như đặt lịch, AI tư vấn và combo chăm tóc.
+                    </p>
+
+                    <div class="home-hero__actions">
+                        <a href="/Bookings/DatLich" class="btn home-btn home-btn--primary">
+                            <i class="bi bi-calendar2-check me-2"></i>Đặt lịch ngay
+                        </a>
+                        <a href="/AiSuggest" class="btn home-btn home-btn--ghost">
+                            <i class="bi bi-stars me-2"></i>Tư vấn kiểu tóc AI
+                        </a>
+                    </div>
+
+                    <div class="home-trust-grid">
+                        <article class="home-trust-card">
+                            <span class="home-trust-card__value">AI Realtime</span>
+                            <p>Quét khuôn mặt, gợi ý kiểu tóc và hỗ trợ stylist chốt form nhanh hơn.</p>
+                        </article>
+                        <article class="home-trust-card">
+                            <span class="home-trust-card__value">Đặt lịch gọn</span>
+                            <p>Chọn dịch vụ trước, tới salon đúng giờ và giảm thời gian chờ.</p>
+                        </article>
+                        <article class="home-trust-card">
+                            <span class="home-trust-card__value">Chăm sóc trọn gói</span>
+                            <p>Cắt, gội, tạo kiểu và tư vấn sản phẩm chăm tóc tại chỗ.</p>
+                        </article>
+                    </div>
+                </div>
+
+                <div class="col-xl-5">
+                    <div class="home-showcase">
+                        <div class="home-showcase__media">
+                            <span class="home-showcase__badge">Booking Fast Lane</span>
+                            <div class="home-showcase__copy">
+                                <p class="home-showcase__kicker">Trải nghiệm nổi bật</p>
+                                <h2>Chốt lịch trước, đến là vào ghế</h2>
+                                <p>Nhìn phát là biết bấm đâu, đến nơi là vào dịch vụ nhanh.</p>
+                            </div>
+                        </div>
+
+                        <div class="home-photo-strip">
+                            <figure class="home-photo-strip__item">
+                                <img src="~/images/ai_hair_consultation.png" alt="Mẫu tóc salon nổi bật" />
+                            </figure>
+                            <figure class="home-photo-strip__item">
+                                <img src="~/images/salon_review.png" alt="Phong cách tóc trẻ trung tại salon" />
+                            </figure>
+                            <figure class="home-photo-strip__item">
+                                <img src="~/images/hair_care_combo.png" alt="Sản phẩm tạo kiểu tại salon" />
+                            </figure>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="home-section">
+        <div class="home-section__heading">
+            <span class="home-section__eyebrow">Dịch vụ chủ lực</span>
+            <h2>Một layout giống barbershop lớn nhưng vẫn đúng chất salon của bạn</h2>
+        </div>
+
+        <div class="home-services-grid">
+            <article class="home-service-card">
+                <div class="home-service-card__media">
+                    <img src="~/images/banner-salon.jpg" alt="Không gian salon sang trọng" />
+                </div>
+                <div class="home-service-card__icon"><i class="bi bi-scissors"></i></div>
+                <h3>Cắt tóc tạo form</h3>
+                <p>Cắt gọn, rõ form và dễ giữ nếp hằng ngày.</p>
+                <a href="/Services" class="home-inline-link">Xem dịch vụ</a>
+            </article>
+
+            <article class="home-service-card">
+                <div class="home-service-card__media">
+                    <img src="~/images/ai_hair_consultation.png" alt="Gợi ý kiểu tóc nam hiện đại" />
+                </div>
+                <div class="home-service-card__icon"><i class="bi bi-stars"></i></div>
+                <h3>AI tư vấn kiểu tóc</h3>
+                <p>Quét mặt nhanh và đưa ra kiểu tóc hợp dáng.</p>
+                <a href="/AiSuggest" class="home-inline-link">Mở AI Suggest</a>
+            </article>
+
+            <article class="home-service-card">
+                <div class="home-service-card__media">
+                    <img src="~/images/hair_care_combo.png" alt="Sản phẩm chăm sóc tóc tại salon" />
+                </div>
+                <div class="home-service-card__icon"><i class="bi bi-bag-check"></i></div>
+                <h3>Combo chăm sóc sau cắt</h3>
+                <p>Gợi ý sản phẩm hợp với kiểu tóc khách vừa làm.</p>
+                <a href="/Products" class="home-inline-link">Xem sản phẩm</a>
+            </article>
+
+            <article class="home-service-card">
+                <div class="home-service-card__media">
+                    <img src="~/images/salon_review.png" alt="Trải nghiệm khách hàng tại salon" />
+                </div>
+                <div class="home-service-card__icon"><i class="bi bi-chat-square-heart"></i></div>
+                <h3>Đánh giá sau trải nghiệm</h3>
+                <p>Thu phản hồi nhanh để khách quay lại dễ hơn.</p>
+                <a href="/Reviews/Create" class="home-inline-link">Gửi đánh giá</a>
+            </article>
+        </div>
+    </section>
+
+    <section class="home-section">
+        <div class="home-section__heading">
+            <span class="home-section__eyebrow">Thông tin thêm</span>
+            <h2>Các thông tin về shop </h2>
+        </div>
+
+        <div class="home-lookbook-grid">
+            <article class="home-lookbook-card home-lookbook-card--large">
+                <img src="~/images/thiet-ke-noi-that-salon-toc-dep-dang-cap-5.jpg" alt="Không gian chính của salon" />
+                <div class="home-lookbook-card__overlay">
+                    <span>Không gian</span>
+                    <h3>Vibe premium ngay từ lúc bước vào</h3>
+                </div>
+            </article>
+
+            <article class="home-lookbook-card">
+                <img src="~/images/how-to-get-this-cristiano-ronaldo-hair-v0-i76cn21u2cg91.jpg" alt="Kiểu tóc nổi bật tại salon" />
+                <div class="home-lookbook-card__overlay">
+                    <span>Kiểu tóc</span>
+                    <h3>Form tóc trẻ trung, dễ tư vấn</h3>
+                </div>
+            </article>
+
+            <article class="home-lookbook-card">
+                <img src="~/images/toc.jpg" alt="Sản phẩm tạo kiểu salon" />
+                <div class="home-lookbook-card__overlay">
+                    <span>Sản phẩm</span>
+                    <h3>Hoàn thiện kiểu tóc ngay tại ghế</h3>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <section class="home-section home-section--split">
+        <div class="row g-4 align-items-stretch">
+            <div class="col-lg-6">
+                <div class="home-story-card">
+                    <span class="home-section__eyebrow">Hành trình khách hàng</span>
+                    <h2>Từ lúc nhìn thấy trang chủ đến khi ngồi vào ghế đều phải mượt</h2>
+                    <p>Thiết kế mới ưu tiên nhịp nhanh, hình ảnh rõ và CTA lớn thay vì giải thích quá nhiều.</p>
+
+                    <div class="home-story-list">
+                        <div class="home-story-list__item">
+                            <strong>1. Vào trang là thấy điểm mạnh</strong>
+                            <span>Đặt lịch và AI tư vấn nằm ngay vùng đầu tiên.</span>
+                        </div>
+                        <div class="home-story-list__item">
+                            <strong>2. Kéo xuống là hiểu salon làm gì</strong>
+                            <span>Dịch vụ, ảnh thật và sản phẩm được gom thành từng khối ngắn.</span>
+                        </div>
+                        <div class="home-story-list__item">
+                            <strong>3. Cuối trang luôn có lời kêu gọi hành động</strong>
+                            <span>Khách không cần quay lên menu vẫn có thể bấm đặt lịch ngay.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="home-process-card">
+                    <span class="home-section__eyebrow">Quy trình nổi bật</span>
+                    <h2>Ba bước đủ gọn để khách mới thấy ngay salon này có hệ thống</h2>
+
+                    <div class="home-process-step">
+                        <span>01</span>
+                        <div>
+                            <strong>Soi mặt và chốt kiểu</strong>
+                            <p>Khách chọn AI hoặc stylist chốt kiểu nhanh.</p>
+                        </div>
+                    </div>
+
+                    <div class="home-process-step">
+                        <span>02</span>
+                        <div>
+                            <strong>Đề xuất combo phù hợp</strong>
+                            <p>Đề xuất gói dịch vụ và sản phẩm hợp nhu cầu.</p>
+                        </div>
+                    </div>
+
+                    <div class="home-process-step">
+                        <span>03</span>
+                        <div>
+                            <strong>Đặt lịch và quay lại dễ hơn</strong>
+                            <p>Giữ đường quay lại thật ngắn cho khách cũ.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="home-section">
+        <div class="home-section__heading">
+            <span class="home-section__eyebrow">Feedback khách hàng</span>
+            <h2>Giao diện mới vẫn giữ cảm giác tin cậy thay vì chỉ đẹp để trưng bày</h2>
+        </div>
+
+        <div class="home-testimonials-grid">
+            <article class="home-testimonial-card">
+                <div class="home-stars">
+                    <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                </div>
+                <p>“Trang nhìn chuyên nghiệp hơn hẳn, vừa vào là biết bấm đâu để đặt lịch nên trải nghiệm gọn hơn nhiều.”</p>
+                <strong>Khách đặt lịch online</strong>
+            </article>
+
+            <article class="home-testimonial-card">
+                <div class="home-stars">
+                    <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                </div>
+                <p>“Phần AI nhìn hiện đại, không bị kiểu demo sơ sài. Khách trẻ sẽ thích ngay vì thấy có trải nghiệm mới.”</p>
+                <strong>Stylist nội bộ</strong>
+            </article>
+
+            <article class="home-testimonial-card">
+                <div class="home-stars">
+                    <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                </div>
+                <p>“Tông đen vàng, CTA lớn và cách chia section cho cảm giác giống một thương hiệu grooming bài bản hơn trước.”</p>
+                <strong>Khách trải nghiệm AI</strong>
+            </article>
+        </div>
+    </section>
+
+    <section class="home-full-bleed home-cta-band">
+        <div class="home-shell home-cta-band__inner">
+            <div>
+                <span class="home-section__eyebrow">Sẵn sàng lên giao diện mới</span>
+                <h2>Trang chủ giờ có thể kéo khách thẳng vào đặt lịch hoặc trải nghiệm AI</h2>
+                <p>Giữ vibe mạnh, gọn và hiện đại để khi mở website lên là thấy ngay salon này làm gì tốt nhất.</p>
+            </div>
+
+            <div class="home-cta-band__actions">
+                <a href="/Bookings/DatLich" class="btn home-btn home-btn--primary">Đặt lịch ngay</a>
+                <a href="/AiSuggest" class="btn home-btn home-btn--ghost">Trải nghiệm AI</a>
+            </div>
+        </div>
+    </section>
+</div>

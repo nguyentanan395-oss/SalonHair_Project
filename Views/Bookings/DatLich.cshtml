@@ -1,0 +1,71 @@
+@model SalonHair.Models.Booking
+
+@{
+    ViewData["Title"] = "Đặt lịch Salon";
+}
+
+<div class="container py-5">
+    <div class="card shadow-lg mx-auto border-0" style="max-width: 500px; border-radius: 15px;">
+        <div class="card-header bg-warning text-dark text-center py-3" style="border-radius: 15px 15px 0 0;">
+            <h2 class="mb-0 fw-bold">✂️ ĐẶT LỊCH HẸN</h2>
+            <small>Làm đẹp ngay hôm nay!</small>
+        </div>
+        <div class="card-body p-4">
+            <form asp-action="DatLich">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Họ và Tên</label>
+                    <input asp-for="CustomerName" class="form-control" placeholder="Nhập tên của bạn" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Số điện thoại</label>
+                    <input asp-for="Phone" class="form-control" placeholder="Để salon gọi xác nhận" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Chọn Dịch vụ</label>
+                    <select id="service-select" asp-for="ServiceId" class="form-select" asp-items="ViewBag.ServiceId">
+                        <option value="">-- Chọn dịch vụ làm tóc --</option>
+                    </select>
+
+                    <div class="mt-3">
+                        <p class="small text-muted mb-2">⭐ Gợi ý dịch vụ phổ biến:</p>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button type="button" class="btn btn-outline-warning btn-sm service-suggest px-3 py-2" data-name="Cắt tóc nam" style="border-radius: 20px;">✂️ Cắt tóc nam</button>
+                            <button type="button" class="btn btn-outline-warning btn-sm service-suggest px-3 py-2" data-name="Cắt tóc nữ" style="border-radius: 20px;">💇‍♀️ Cắt tóc nữ</button>
+                            <button type="button" class="btn btn-outline-warning btn-sm service-suggest px-3 py-2" data-name="Luxury" style="border-radius: 20px;">🌈 Nhuộm Luxury</button>
+                            <button type="button" class="btn btn-outline-warning btn-sm service-suggest px-3 py-2" data-name="Uốn" style="border-radius: 20px;">🌀 Uốn tóc</button>
+                            <button type="button" class="btn btn-outline-warning btn-sm service-suggest px-3 py-2" data-name="Gội" style="border-radius: 20px;">🧴 Gội thảo dược</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Ngày giờ hẹn</label>
+                    <input asp-for="BookingDate" type="datetime-local" class="form-control" required />
+                </div>
+
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-dark btn-lg">XÁC NHẬN ĐẶT LỊCH</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('.service-suggest').forEach(button => {
+            button.addEventListener('click', function() {
+                const serviceName = this.getAttribute('data-name');
+                const selectElement = document.getElementById('service-select');
+                for (let i = 0; i < selectElement.options.length; i++) {
+                    if (selectElement.options[i].text.toLowerCase().includes(serviceName.toLowerCase())) {
+                        selectElement.selectedIndex = i;
+                        break;
+                    }
+                }
+            });
+        });
+    </script>
+}

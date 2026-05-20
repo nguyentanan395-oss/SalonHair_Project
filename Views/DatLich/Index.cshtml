@@ -1,0 +1,36 @@
+﻿@model SalonHair.Models.Booking
+
+<h2>Đặt Lịch Cắt Tóc</h2>
+
+@if (ViewBag.Message != null)
+{
+    <p style="color:green">@ViewBag.Message</p>
+}
+
+<form asp-action="Index" method="post">
+
+    <div>
+        <label>Tên khách</label>
+        <input asp-for="CustomerName" />
+    </div>
+
+    <div>
+        <label>Số điện thoại</label>
+        <input asp-for="Phone" />
+    </div>
+
+    <div>
+        <label>Dịch vụ</label>
+        <select asp-for="ServiceId" asp-items="ViewBag.ServiceId"></select>
+    </div>
+
+    <div>
+        <label>Ngày đặt</label>
+        <input asp-for="BookingDate" type="datetime-local" />
+    </div>
+
+    <br />
+
+    <button type="submit">Đặt lịch</button>
+
+</form>

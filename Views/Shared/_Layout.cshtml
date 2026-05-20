@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - SalonHair Luxury</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/SalonHair.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'vi',
+                includedLanguages: 'en,vi,zh-CN,ja,ko',
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+                autoDisplay: false
+            }, 'google_translate_element');
+        }
+    </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    <style>
+        .goog-te-banner-frame.skiptranslate, .goog-te-gadget-icon { display: none !important; }
+        body { top: 0px !important; }
+        .goog-te-gadget-simple { background-color: transparent !important; border: none !important; padding: 0 !important; cursor: pointer; }
+        .goog-te-menu-value span { color: #d4af37 !important; font-weight: bold; }
+        .language-picker { display: flex; align-items: center; gap: 10px; margin-right: 15px; }
+        .flag-btn { border: none; background: transparent; padding: 0; cursor: pointer; opacity: 0.6; transition: 0.3s; }
+        .flag-btn:hover, .flag-btn.active { opacity: 1; transform: scale(1.1); }
+        .flag-img { width: 28px; height: 20px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.2); }
+    </style>
+</head>
+<body class="bg-salon">
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark shadow-sm mb-3">
+            <div class="container-fluid">
+                <a class="navbar-brand fw-bold gold-text" asp-area="" asp-controller="Home" asp-action="Index">✂️ SALON HAIR</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Home" asp-action="Index">Trang chủ</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-bold gold-text" asp-controller="AiSuggest" asp-action="Index">🤖 Tư vấn AI</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-bold gold-text" asp-controller="Bookings" asp-action="DatLich">📅 Đặt lịch ngay</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-bold gold-text" asp-controller="Products" asp-action="Index">🛍 Mua sắm</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-bold gold-text" asp-controller="Reviews" asp-action="Create">⭐ Đánh giá salon</a>
+                        </li>
+
+                        <li class="nav-item d-flex align-items-center ms-lg-auto px-2">
+                            <div class="language-picker">
+                                <button onclick="changeLanguage('vi')" class="flag-btn" id="btn-vi" title="Tiếng Việt">
+                                    <img src="https://flagcdn.com/w40/vn.png" class="flag-img" />
+                                </button>
+                                <button onclick="changeLanguage('en')" class="flag-btn" id="btn-en" title="English">
+                                    <img src="https://flagcdn.com/w40/us.png" class="flag-img" />
+                                </button>
+                                <button onclick="changeLanguage('zh-CN')" class="flag-btn" id="btn-zh" title="中文">
+                                    <img src="https://flagcdn.com/w40/cn.png" class="flag-img" />
+                                </button>
+                            </div>
+                        </li>
+
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item dropdown ms-lg-auto">
+                                <a class="btn btn-outline-warning btn-sm px-3 mt-1 dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-shield-lock me-1"></i> ADMIN DASHBOARD
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark bg-dark border-warning" aria-labelledby="adminDropdown">
+                                    <li><a class="dropdown-item gold-text" asp-controller="Bookings" asp-action="Index"><i class="bi bi-calendar-check me-2"></i>Quản lý Lịch hẹn</a></li>
+                                    <li><a class="dropdown-item gold-text" asp-controller="Orders" asp-action="Index"><i class="bi bi-box-seam me-2"></i>Quản lý Đơn hàng Shop</a></li>
+                                    <li><a class="dropdown-item gold-text" asp-controller="Products" asp-action="Manage"><i class="bi bi-box me-2"></i>Quản lý Kho Sản phẩm</a></li>
+                                    <li><a class="dropdown-item gold-text" asp-controller="Reviews" asp-action="Index"><i class="bi bi-star-fill me-2"></i>Xem Đánh Giá Khách Hàng</a></li>
+                                    <li><hr class="dropdown-divider border-secondary"></li>
+                                    <li><a class="dropdown-item text-danger fw-bold" asp-controller="Account" asp-action="Logout"><i class="bi bi-box-arrow-right me-2"></i>Đăng xuất</a></li>
+                                </ul>
+                            </li>
+                        }
+                        else if (User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item dropdown ms-lg-auto">
+                                <a class="btn btn-outline-light btn-sm px-3 mt-1 dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-person-circle me-1"></i> Chào, @User.Identity.Name
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark bg-dark" aria-labelledby="userDropdown">
+                                    <li><a class="dropdown-item text-danger fw-bold" asp-controller="Account" asp-action="Logout"><i class="bi bi-box-arrow-right me-2"></i>Đăng xuất</a></li>
+                                </ul>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item ms-lg-auto">
+                                <a class="btn btn-warning btn-sm px-3 mt-1 fw-bold" asp-controller="Account" asp-action="Login"><i class="bi bi-box-arrow-in-right me-1"></i> Đăng Nhập</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="container">
+        @if (TempData["SuccessMessage"] is string successMessage)
+        {
+            <div class="alert alert-success alert-dismissible fade show app-flash-message mt-3 mb-4" role="alert">
+                <div class="d-flex align-items-start gap-3">
+                    <i class="bi bi-check-circle-fill fs-4"></i>
+                    <div>
+                        <div class="fw-bold">Đặt lịch thành công</div>
+                        <div>@successMessage</div>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <div id="google_translate_element" style="display:none;"></div>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script>
+        function changeLanguage(lang) {
+            // 1. Update Cookie for Google Translate
+            let cookieValue = "/vi/" + lang;
+            document.cookie = "googtrans=" + cookieValue + "; path=/";
+            document.cookie = "googtrans=" + cookieValue + "; domain=" + window.location.hostname + "; path=/";
+            
+            // 2. Call controller to save to DB (if logged in)
+            fetch('/Language/SetLanguage', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `lang=${lang}&returnUrl=${window.location.pathname}`
+            }).then(() => {
+                location.reload(); 
+            });
+        }
+
+        // Set active flag based on cookie
+        (function() {
+            let name = "googtrans=";
+            let ca = document.cookie.split(';');
+            let lang = "vi";
+            for(let i = 0; i < ca.length; i++) {
+                let c = ca[i].trim();
+                if (c.indexOf(name) == 0) lang = c.substring(name.length).split('/')[2];
+            }
+            let activeBtn = document.getElementById("btn-" + (lang === "zh-CN" ? "zh" : lang));
+            if(activeBtn) activeBtn.classList.add("active");
+        })();
+    </script>
+    
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,52 @@
+@model SalonHair.Models.User
+@{
+    ViewData["Title"] = "Đăng Nhập";
+}
+
+<div class="row mt-5">
+    <div class="col-md-6 offset-md-3">
+        <div class="card bg-dark border-gold-card shadow-lg text-light">
+            <div class="card-header border-bottom border-warning py-3 text-center">
+                <h3 class="text-warning fw-bold mb-0"><i class="bi bi-box-arrow-in-right"></i> ĐĂNG NHẬP HỆ THỐNG</h3>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="Login" method="post">
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success text-center">
+                            @TempData["SuccessMessage"]
+                        </div>
+                    }
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Username" class="form-label text-warning fw-bold"></label>
+                        <input asp-for="Username" class="form-control bg-secondary text-light border-0" placeholder="Nhập tên tài khoản..." />
+                        <span asp-validation-for="Username" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Password" class="form-label text-warning fw-bold"></label>
+                        <input asp-for="Password" type="password" class="form-control bg-secondary text-light border-0" placeholder="Nhập mật khẩu..." />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-warning btn-lg fw-bold">Đăng Nhập</button>
+                    </div>
+                </form>
+                <div class="text-center mt-4">
+                    <p>Chưa có tài khoản? <a asp-action="Register" class="text-warning text-decoration-none fw-bold">Đăng Ký Ngay</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+
+<style>
+    .border-gold-card { border: 1px solid rgba(212, 175, 55, 0.3) !important; }
+</style>

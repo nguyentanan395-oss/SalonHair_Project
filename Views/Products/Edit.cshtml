@@ -1,0 +1,67 @@
+@model SalonHair.Models.Product
+
+@{
+    ViewData["Title"] = "Sửa Sản Phẩm";
+}
+
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card bg-dark border-gold-card text-light shadow-lg">
+            <div class="card-header border-bottom border-warning py-3">
+                <h4 class="mb-0 text-warning fw-bold"><i class="bi bi-pencil-square me-2"></i>Sửa Sản Phẩm</h4>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="Edit" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <input type="hidden" asp-for="Id" />
+                    
+                    <div class="mb-3 text-center">
+                        <img src="@Model.ImageUrl" style="width: 150px; height: 150px; object-fit: cover;" class="rounded shadow" onerror="this.src='https://via.placeholder.com/150'"/>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label text-warning fw-bold"></label>
+                        <input asp-for="Name" class="form-control bg-secondary text-light border-0" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Price" class="form-label text-warning fw-bold"></label>
+                        <input asp-for="Price" type="number" step="1000" class="form-control bg-secondary text-light border-0" />
+                        <span asp-validation-for="Price" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-warning fw-bold">Hoặc Tải ảnh từ máy lên (Sẽ ghi đè link HTML)</label>
+                        <input type="file" name="imageFile" class="form-control bg-secondary text-light border-0" accept="image/*" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="ImageUrl" class="form-label text-warning fw-bold">Link Ảnh Bìa (Url gốc)</label>
+                        <input asp-for="ImageUrl" class="form-control bg-secondary text-light border-0" />
+                        <span asp-validation-for="ImageUrl" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label asp-for="Description" class="form-label text-warning fw-bold"></label>
+                        <textarea asp-for="Description" class="form-control bg-secondary text-light border-0" rows="4"></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <input type="submit" value="Cập nhật Sản Phẩm" class="btn btn-warning fw-bold" />
+                        <a asp-action="Manage" class="btn btn-outline-light">Hủy bỏ</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+
+<style>
+    .border-gold-card { border: 1px solid rgba(212, 175, 55, 0.3) !important; }
+</style>

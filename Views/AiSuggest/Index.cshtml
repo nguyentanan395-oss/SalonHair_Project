@@ -1,0 +1,459 @@
+@{
+    ViewData["Title"] = "AI tư vấn kiểu tóc";
+}
+
+<div id="aiSuggestApp"
+     class="ai-lab-page py-4 py-lg-5"
+     data-analyze-url="@Url.Action("Analyze", "AiSuggest")"
+     data-booking-url="/Bookings/DatLich"
+     data-feedback-url="@Url.Action("SaveFeedback", "AiSuggest")"
+     data-export-feedback-url="@Url.Action("ExportFeedback", "AiSuggest")"
+     data-import-feedback-url="@Url.Action("ImportFeedback", "AiSuggest")"
+     data-train-model-url="@Url.Action("TrainModel", "AiSuggest")"
+     data-runtime-model-url="@Url.Action("RuntimeModel", "AiSuggest")">
+
+    <section class="hero-panel p-4 p-lg-5">
+        <div class="row g-4 align-items-center">
+            <div class="col-lg-5">
+                <span class="hero-chip">LIVE HAIR CONSULTANT</span>
+                <h1 class="display-5 fw-bold text-light mt-3">Mở webcam trực tiếp để AI soi mặt và gợi ý kiểu tóc theo thời gian thực</h1>
+                <p class="lead text-light-emphasis mt-3">
+                    AI sẽ theo dõi khung hình webcam, đo tỉ lệ trán, gò má, hàm và chiều dài khuôn mặt rồi cập nhật nhóm kiểu tóc phù hợp ngay trên màn hình.
+                </p>
+
+                <div class="hero-points mt-4">
+                    <div class="hero-point">
+                        <span>01</span>
+                        <p>Bấm mở webcam và đặt khách ngồi chính diện, ánh sáng rõ.</p>
+                    </div>
+                    <div class="hero-point">
+                        <span>02</span>
+                        <p>AI quét face landmarks liên tục và cập nhật dáng mặt realtime.</p>
+                    </div>
+                    <div class="hero-point">
+                        <span>03</span>
+                        <p>Gợi ý kiểu tóc và tips styling sẽ đổi ngay khi góc mặt ổn định.</p>
+                    </div>
+
+                    <div id="feedbackPanel" class="feedback-panel mt-4 pt-4 d-none">
+                        <h3 class="h6 text-light">Feedback cho AI</h3>
+                        <p class="small text-light-emphasis">Nếu AI đoán sai, hãy sửa nhãn đúng để bộ dataset của salon dày hơn.</p>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button type="button" id="feedbackAcceptButton" class="btn btn-outline-success btn-sm">Kết quả đúng</button>
+                            <button type="button" class="btn btn-outline-light btn-sm feedback-shape-button" data-shape="Tron">Sửa thành mặt tròn</button>
+                            <button type="button" class="btn btn-outline-light btn-sm feedback-shape-button" data-shape="Vuong">Sửa thành mặt vuông</button>
+                            <button type="button" class="btn btn-outline-light btn-sm feedback-shape-button" data-shape="Trai xoan">Sửa thành trái xoan</button>
+                            <button type="button" class="btn btn-outline-light btn-sm feedback-shape-button" data-shape="Dai">Sửa thành mặt dài</button>
+                        </div>
+                        <p id="feedbackStatus" class="small text-light-emphasis mt-3 mb-0">Kết quả AI mới nhất sẽ được lưu vào dataset khi bạn xác nhận.</p>
+                    </div>
+
+                    <div class="dataset-tools mt-4 pt-4">
+                        <h3 class="h6 text-light">Dataset local</h3>
+                        <p class="small text-light-emphasis">Có thể export bộ dữ liệu này sang file zip rồi import trên máy khác.</p>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button type="button" id="exportFeedbackButton" class="btn btn-outline-warning btn-sm">Export dataset</button>
+                            <button type="button" id="importFeedbackButton" class="btn btn-outline-secondary btn-sm">Import dataset</button>
+                            <button type="button" id="trainModelButton" class="btn btn-outline-success btn-sm">Train AI từ dataset</button>
+                        </div>
+                        <p id="datasetStatus" class="small text-light-emphasis mt-3 mb-0">Dataset được lưu riêng trên máy này, nhưng có thể mang sang máy khác bằng export/import.</p>
+                    </div>
+
+                    <div class="batch-tools mt-4 pt-4">
+                        <h3 class="h6 text-light">Gán nhãn hàng loạt</h3>
+                        <p class="small text-light-emphasis">Chọn cả thư mục ảnh, AI sẽ mở từng ảnh để bạn xác nhận nhãn và tự động sang ảnh tiếp theo.</p>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button type="button" id="selectBatchFolderButton" class="btn btn-outline-info btn-sm">Chọn thư mục ảnh</button>
+                            <button type="button" id="skipBatchImageButton" class="btn btn-outline-light btn-sm" disabled>Bỏ qua ảnh này</button>
+                            <button type="button" id="stopBatchButton" class="btn btn-outline-secondary btn-sm" disabled>Dừng batch</button>
+                        </div>
+                        <p id="batchProgress" class="small text-light-emphasis mt-3 mb-1">Chưa có phiên gán nhãn hàng loạt nào.</p>
+                        <p id="batchStatus" class="small text-light-emphasis mb-0">Sau khi chọn folder, bạn chỉ cần bấm đúng nhãn hoặc sửa nhãn ở khung feedback.</p>
+                    </div>
+                </div>
+
+                <div class="control-panel mt-4">
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="button" id="startCameraButton" class="btn btn-warning btn-lg px-4">
+                            Mở webcam trực tiếp
+                        </button>
+                        <button type="button" id="stopCameraButton" class="btn btn-outline-light btn-lg px-4" disabled>
+                            Dừng webcam
+                        </button>
+                        <button type="button" id="selectImageButton" class="btn btn-outline-secondary btn-lg px-4">
+                            Hoặc tải ảnh
+                        </button>
+                    </div>
+
+                    <div class="manual-actions mt-3">
+                        <button type="button" id="analyzeFaceButton" class="btn btn-outline-warning px-4" disabled>
+                            Phân tích ảnh đã tải
+                        </button>
+                        <button type="button" id="resetAnalysisButton" class="btn btn-outline-secondary px-4">
+                            Làm mới
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-7">
+                <div class="scan-shell">
+                    <input id="faceImageInput" type="file" accept="image/*" class="d-none" />
+                    <input id="feedbackImportInput" type="file" accept=".zip,application/zip" class="d-none" />
+                    <input id="batchFolderInput" type="file" accept="image/*" multiple webkitdirectory directory class="d-none" />
+
+                    <div class="scanner-stage">
+                        <video id="webcamVideo" class="scanner-video" autoplay playsinline muted></video>
+                        <canvas id="facePreviewCanvas" class="scanner-canvas"></canvas>
+                        <div id="scanEmptyState" class="scan-empty-state">
+                            <i class="bi bi-badge-hd"></i>
+                            <p id="uploadHint" class="mb-0">Bấm mở webcam để quét trực tiếp, hoặc tải ảnh chân dung một người nếu cần tư vấn thủ công.</p>
+                        </div>
+                    </div>
+
+                    <div class="scan-status mt-4">
+                        <span class="scan-status__label">Trạng thái AI</span>
+                        <p id="scanStatus" data-state="loading" class="mb-0">Đang chuẩn bị mô hình phân tích khuôn mặt...</p>
+                    </div>
+
+                    <div class="row g-3 mt-1">
+                        <div class="col-md-4">
+                            <div class="metric-card">
+                                <span>Dáng mặt</span>
+                                <strong id="metricShape">--</strong>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="metric-card">
+                                <span>Độ tự tin</span>
+                                <strong id="metricConfidence">--</strong>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="metric-card">
+                                <span>Tỉ lệ dài/rộng</span>
+                                <strong id="metricRatio">--</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="live-note mt-3">
+                        <span class="live-pill">Realtime</span>
+                        <span class="text-light-emphasis">Hệ thống chỉ gửi cập nhật khi dáng mặt ổn định hoặc thay đổi rõ rệt để giữ trải nghiệm mượt.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="scanResults" class="result-panel d-none mt-4 mt-lg-5 p-4 p-lg-5">
+        <div class="row g-4 align-items-start">
+            <div class="col-lg-4">
+                <div class="result-summary-card">
+                    <span class="hero-chip">AI RESULT</span>
+                    <h2 id="resultTitle" class="h3 text-light mt-3 mb-3"></h2>
+                    <p id="resultSummary" class="text-light-emphasis"></p>
+                    <p id="resultConfidence" class="text-warning fw-semibold mb-2"></p>
+                    <p id="resultMeta" class="text-light-emphasis small mb-0"></p>
+
+                    <div class="manual-fallback mt-4 pt-4">
+                        <h3 class="h6 text-light">Fallback thủ công</h3>
+                        <p class="small text-light-emphasis">Nếu webcam chưa ổn, bạn vẫn có thể chọn tay dáng mặt để tư vấn nhanh cho khách.</p>
+                        <div class="d-flex flex-wrap gap-2">
+                            <a class="btn btn-outline-light btn-sm" href="@Url.Action("Result", "AiSuggest", new { shape = "Tròn" })">Mặt tròn</a>
+                            <a class="btn btn-outline-light btn-sm" href="@Url.Action("Result", "AiSuggest", new { shape = "Vuông" })">Mặt vuông</a>
+                            <a class="btn btn-outline-light btn-sm" href="@Url.Action("Result", "AiSuggest", new { shape = "Trái xoan" })">Trái xoan</a>
+                            <a class="btn btn-outline-light btn-sm" href="@Url.Action("Result", "AiSuggest", new { shape = "Dài" })">Mặt dài</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tips-card mt-4">
+                    <h3 class="h5 text-light">Gợi ý styling cho stylist</h3>
+                    <ul id="resultTips" class="tips-list mb-0"></ul>
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div id="resultCards" class="result-grid"></div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<style>
+    .ai-lab-page {
+        color: #fff;
+    }
+
+    .hero-panel,
+    .result-panel {
+        background:
+            radial-gradient(circle at top right, rgba(212, 175, 55, 0.18), transparent 28%),
+            linear-gradient(145deg, rgba(7, 10, 16, 0.96), rgba(18, 22, 32, 0.95));
+        border: 1px solid rgba(212, 175, 55, 0.28);
+        border-radius: 30px;
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+    }
+
+    .hero-chip {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        padding: 0.45rem 0.9rem;
+        background: rgba(212, 175, 55, 0.14);
+        color: #f0cf7a;
+        font-size: 0.82rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+    }
+
+    .hero-points {
+        display: grid;
+        gap: 1rem;
+    }
+
+    .hero-point {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 1rem;
+        align-items: start;
+        padding: 1rem 1.1rem;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .hero-point span {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: rgba(212, 175, 55, 0.14);
+        color: #f0cf7a;
+        font-weight: 700;
+    }
+
+    .hero-point p {
+        margin: 0;
+        color: rgba(255, 255, 255, 0.85);
+    }
+
+    .control-panel,
+    .scan-shell,
+    .result-summary-card,
+    .tips-card {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        padding: 1.25rem;
+    }
+
+    .manual-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .scanner-stage {
+        position: relative;
+        min-height: 420px;
+        border-radius: 24px;
+        overflow: hidden;
+        background:
+            linear-gradient(135deg, rgba(8, 12, 20, 0.98), rgba(30, 36, 48, 0.95)),
+            repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.03) 1px, transparent 1px, transparent 30px),
+            repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.03) 1px, transparent 1px, transparent 30px);
+        border: 1px solid rgba(212, 175, 55, 0.18);
+    }
+
+    .scanner-video,
+    .scanner-canvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: cover;
+    }
+
+    .scanner-video.is-hidden {
+        display: none;
+    }
+
+    .scanner-video.is-mirrored,
+    .scanner-canvas.is-mirrored {
+        transform: scaleX(-1);
+    }
+
+    .scanner-canvas {
+        z-index: 2;
+    }
+
+    .scan-empty-state {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        gap: 0.6rem;
+        text-align: center;
+        color: rgba(255, 255, 255, 0.72);
+        padding: 2rem;
+        z-index: 3;
+        pointer-events: none;
+    }
+
+    .scan-empty-state i {
+        font-size: 2.4rem;
+        color: rgba(240, 207, 122, 0.9);
+    }
+
+    .scan-status {
+        padding: 1rem 1.1rem;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.04);
+    }
+
+    .scan-status__label,
+    .metric-card span {
+        display: block;
+        color: rgba(255, 255, 255, 0.58);
+        font-size: 0.9rem;
+        margin-bottom: 0.35rem;
+    }
+
+    #scanStatus[data-state="loading"] {
+        color: #ffe8a3;
+    }
+
+    #scanStatus[data-state="ready"] {
+        color: #c9f0c4;
+    }
+
+    #scanStatus[data-state="error"] {
+        color: #ffb4b4;
+    }
+
+    .metric-card {
+        height: 100%;
+        border-radius: 18px;
+        padding: 1rem 1.1rem;
+        background: rgba(255, 255, 255, 0.04);
+    }
+
+    .metric-card strong {
+        color: #fff;
+        font-size: 1.3rem;
+    }
+
+    .live-note {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .live-pill {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        padding: 0.35rem 0.75rem;
+        background: rgba(89, 219, 125, 0.16);
+        color: #cbffd7;
+        font-size: 0.85rem;
+    }
+
+    .manual-fallback {
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .feedback-panel,
+    .dataset-tools,
+    .batch-tools {
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    #feedbackStatus[data-state="loading"],
+    #datasetStatus[data-state="loading"],
+    #batchStatus[data-state="loading"] {
+        color: #ffe8a3;
+    }
+
+    #feedbackStatus[data-state="success"],
+    #datasetStatus[data-state="success"],
+    #batchStatus[data-state="success"] {
+        color: #c9f0c4;
+    }
+
+    #feedbackStatus[data-state="error"],
+    #datasetStatus[data-state="error"],
+    #batchStatus[data-state="error"] {
+        color: #ffb4b4;
+    }
+
+    .tips-list {
+        margin: 0;
+        padding-left: 1.15rem;
+        color: rgba(255, 255, 255, 0.84);
+    }
+
+    .tips-list li + li {
+        margin-top: 0.8rem;
+    }
+
+    .result-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.25rem;
+    }
+
+    .result-card {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 22px;
+        overflow: hidden;
+        height: 100%;
+    }
+
+    .result-card__image {
+        width: 100%;
+        height: 240px;
+        object-fit: cover;
+        display: block;
+    }
+
+    .result-card__body {
+        padding: 1.1rem;
+    }
+
+    .result-card__body h3 {
+        color: #fff;
+        font-size: 1.15rem;
+        margin: 0.9rem 0 0.6rem;
+    }
+
+    .result-card__body p {
+        color: rgba(255, 255, 255, 0.78);
+        min-height: 4.5rem;
+    }
+
+    .result-card__shape {
+        display: inline-flex;
+        border-radius: 999px;
+        padding: 0.35rem 0.75rem;
+        background: rgba(212, 175, 55, 0.14);
+        color: #f0cf7a;
+        font-size: 0.85rem;
+    }
+
+    @@media (max-width: 991.98px) {
+        .scanner-stage {
+            min-height: 320px;
+        }
+    }
+</style>
+
+@section Scripts {
+    <script type="module" src="~/js/ai-suggest.js" asp-append-version="true"></script>
+}

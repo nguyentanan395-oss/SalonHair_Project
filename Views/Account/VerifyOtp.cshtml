@@ -1,0 +1,38 @@
+@{
+    ViewData["Title"] = "Xác thực OTP";
+}
+
+<div class="row mt-5">
+    <div class="col-md-6 offset-md-3">
+        <div class="card bg-dark border-gold-card shadow-lg text-light">
+            <div class="card-header border-bottom border-warning py-3 text-center">
+                <h3 class="text-warning fw-bold mb-0"><i class="bi bi-shield-lock"></i> XÁC THỰC OTP</h3>
+            </div>
+            <div class="card-body p-4">
+                <div class="alert alert-info text-center" role="alert">
+                    Chúng tôi đã gửi một mã OTP gồm 6 chữ số đến email của bạn. Vui lòng kiểm tra hộp thư đến (hoặc thư rác).
+                </div>
+
+                <form asp-action="VerifyOtp" method="post">
+                    <input type="hidden" name="username" value="@ViewBag.Username" />
+                    
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="mb-4">
+                        <label for="otpCode" class="form-label text-warning fw-bold">Nhập mã OTP</label>
+                        <input type="text" id="otpCode" name="otpCode" class="form-control bg-secondary text-light border-0 text-center fs-4 letter-spacing-2" placeholder="------" maxlength="6" required autocomplete="off" />
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-outline-warning btn-lg fw-bold">Xác thực</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .border-gold-card { border: 1px solid rgba(212, 175, 55, 0.3) !important; }
+    .letter-spacing-2 { letter-spacing: 0.5em; }
+</style>

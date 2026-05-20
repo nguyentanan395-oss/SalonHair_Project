@@ -1,0 +1,129 @@
+@model SalonHair.Models.AiSuggestionViewModel
+
+@{
+    ViewData["Title"] = "Gợi ý kiểu tóc";
+}
+
+<div class="container py-5">
+    <div class="scan-result-shell p-4 p-lg-5">
+        <div class="text-center mb-5">
+            <span class="eyebrow">AI HAIRSTYLE MATCH</span>
+            <h1 class="display-6 fw-bold text-light mt-3">Gợi ý kiểu tóc cho khuôn mặt @Model.FaceShape</h1>
+            <p class="lead text-light-emphasis mt-3 mb-2">@Model.Summary</p>
+            <p class="text-warning mb-0">Độ tự tin ước tính: @(Model.Confidence.ToString("P0"))</p>
+        </div>
+
+        <div class="row g-4 align-items-stretch mb-5">
+            <div class="col-lg-5">
+                <div class="info-card h-100">
+                    <h2 class="h4 text-light">Lý do AI gợi ý</h2>
+                    <p class="text-light-emphasis">@Model.ConfidenceLabel</p>
+                    <ul class="tip-list mt-4">
+                        @foreach (var tip in Model.StylingTips)
+                        {
+                            <li>@tip</li>
+                        }
+                    </ul>
+                    @if (Model.UsedFallbackData)
+                    {
+                        <div class="alert alert-warning border-0 mt-4 mb-0">
+                            Cơ sở dữ liệu kiểu tóc đang được thay bằng bộ gợi ý dự phòng để trải nghiệm không bị gián đoạn.
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="col-lg-7">
+                <div class="row g-4">
+                    @foreach (var item in Model.Suggestions)
+                    {
+                        <div class="col-md-6">
+                            <div class="suggestion-card h-100">
+                                <img src="@(string.IsNullOrWhiteSpace(item.ImageUrl) ? "https://placehold.co/640x480?text=Salon+Hair" : item.ImageUrl)"
+                                     class="suggestion-image"
+                                     alt="@item.StyleName"
+                                     onerror="this.onerror=null;this.src='https://placehold.co/640x480?text=Salon+Hair';" />
+                                <div class="suggestion-body">
+                                    <div class="badge-chip">Phù hợp với @Model.FaceShape</div>
+                                    <h3 class="h5 text-light mt-3">@item.StyleName</h3>
+                                    <p class="text-light-emphasis mb-0">@item.Description</p>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center d-flex flex-column flex-sm-row gap-3 justify-content-center">
+            <a href="/Bookings/DatLich" class="btn btn-warning btn-lg px-4">Đặt lịch tư vấn ngay</a>
+            <a href="@Url.Action("Index", "AiSuggest")" class="btn btn-outline-light btn-lg px-4">Quay lại quét ảnh khác</a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .scan-result-shell {
+        background:
+            radial-gradient(circle at top right, rgba(212, 175, 55, 0.18), transparent 28%),
+            linear-gradient(145deg, rgba(7, 10, 16, 0.96), rgba(18, 22, 32, 0.94));
+        border: 1px solid rgba(212, 175, 55, 0.35);
+        border-radius: 28px;
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+    }
+
+    .eyebrow {
+        display: inline-block;
+        padding: 0.4rem 0.8rem;
+        border-radius: 999px;
+        background: rgba(212, 175, 55, 0.14);
+        color: #f0cf7a;
+        font-size: 0.8rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+    }
+
+    .info-card,
+    .suggestion-card {
+        height: 100%;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        overflow: hidden;
+    }
+
+    .info-card {
+        padding: 1.5rem;
+    }
+
+    .tip-list {
+        margin: 0;
+        padding-left: 1.1rem;
+        color: rgba(255, 255, 255, 0.82);
+    }
+
+    .tip-list li + li {
+        margin-top: 0.75rem;
+    }
+
+    .suggestion-image {
+        width: 100%;
+        height: 250px;
+        object-fit: cover;
+        display: block;
+    }
+
+    .suggestion-body {
+        padding: 1.25rem;
+    }
+
+    .badge-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: rgba(212, 175, 55, 0.14);
+        color: #f0cf7a;
+        border-radius: 999px;
+        padding: 0.35rem 0.75rem;
+        font-size: 0.85rem;
+    }
+</style>
