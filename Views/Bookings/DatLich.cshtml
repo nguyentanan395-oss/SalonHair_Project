@@ -6,42 +6,42 @@
 
 <div class="container py-5">
     <div class="card shadow-lg mx-auto border-0" style="max-width: 500px; border-radius: 15px;">
-        <div class="card-header bg-warning text-dark text-center py-3" style="border-radius: 15px 15px 0 0;">
-            <h2 class="mb-0 fw-bold">✂️ ĐẶT LỊCH HẸN</h2>
+        <div class="card-header bg-warning text-white text-center py-3" style="border-radius: 15px 15px 0 0;">
+            <h2 class="mb-0 fw-bold gold-text"><i class="bi bi-calendar2-check me-2"></i>ĐẶT LỊCH HẸN</h2>
             <small>Làm đẹp ngay hôm nay!</small>
         </div>
         <div class="card-body p-4">
             <form asp-action="DatLich">
                 <div class="mb-3">
-                    <label class="form-label fw-bold">Họ và Tên</label>
+                    <label class="form-label fw-bold gold-text">Họ và Tên</label>
                     <input asp-for="CustomerName" class="form-control" placeholder="Nhập tên của bạn" required />
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label fw-bold">Số điện thoại</label>
+                    <label class="form-label fw-bold gold-text">Số điện thoại</label>
                     <input asp-for="Phone" class="form-control" placeholder="Để salon gọi xác nhận" required />
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label fw-bold">Chọn Dịch vụ</label>
+                    <label class="form-label fw-bold gold-text">Chọn Dịch vụ</label>
                     <select id="service-select" asp-for="ServiceId" class="form-select" asp-items="ViewBag.ServiceId">
                         <option value="">-- Chọn dịch vụ làm tóc --</option>
                     </select>
 
                     <div class="mt-3">
-                        <p class="small text-muted mb-2">⭐ Gợi ý dịch vụ phổ biến:</p>
+                        <p class="small gold-text mb-2"><i class="bi bi-stars text-warning me-1"></i> Gợi ý dịch vụ phổ biến:</p>
                         <div class="d-flex flex-wrap gap-2">
-                            <button type="button" class="btn btn-outline-warning btn-sm service-suggest px-3 py-2" data-name="Cắt tóc nam" style="border-radius: 20px;">✂️ Cắt tóc nam</button>
-                            <button type="button" class="btn btn-outline-warning btn-sm service-suggest px-3 py-2" data-name="Cắt tóc nữ" style="border-radius: 20px;">💇‍♀️ Cắt tóc nữ</button>
-                            <button type="button" class="btn btn-outline-warning btn-sm service-suggest px-3 py-2" data-name="Luxury" style="border-radius: 20px;">🌈 Nhuộm Luxury</button>
-                            <button type="button" class="btn btn-outline-warning btn-sm service-suggest px-3 py-2" data-name="Uốn" style="border-radius: 20px;">🌀 Uốn tóc</button>
-                            <button type="button" class="btn btn-outline-warning btn-sm service-suggest px-3 py-2" data-name="Gội" style="border-radius: 20px;">🧴 Gội thảo dược</button>
+                            <button type="button" class="btn btn-outline-warning btn-sm service-suggest px-3 py-2" data-name="Cắt tóc nam" style="border-radius: 20px;"><i class="bi bi-scissors me-1"></i> Cắt tóc nam</button>
+                            <button type="button" class="btn btn-outline-warning btn-sm service-suggest px-3 py-2" data-name="Cắt tóc nữ" style="border-radius: 20px;"><i class="bi bi-person-heart me-1"></i> Cắt tóc nữ</button>
+                            <button type="button" class="btn btn-outline-warning btn-sm service-suggest px-3 py-2" data-name="Luxury" style="border-radius: 20px;"><i class="bi bi-palette2 me-1"></i> Nhuộm Luxury</button>
+                            <button type="button" class="btn btn-outline-warning btn-sm service-suggest px-3 py-2" data-name="Uốn" style="border-radius: 20px;"><i class="bi bi-magic me-1"></i> Uốn tóc</button>
+                            <button type="button" class="btn btn-outline-warning btn-sm service-suggest px-3 py-2" data-name="Gội" style="border-radius: 20px;"><i class="bi bi-water me-1"></i> Gội thảo dược</button>
                         </div>
                     </div>
                 </div>
 
                 <div class="mb-4">
-                    <label class="form-label fw-bold">Ngày giờ hẹn</label>
+                    <label class="form-label fw-bold gold-text">Ngày giờ hẹn</label>
                     <input asp-for="BookingDate" type="datetime-local" class="form-control" required />
                 </div>
 
