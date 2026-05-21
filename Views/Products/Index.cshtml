@@ -1,7 +1,12 @@
+@using Microsoft.AspNetCore.Http
+@using SalonHair.Models
 @model IEnumerable<SalonHair.Models.Product>
 
 @{
     ViewData["Title"] = "Cửa hàng Sản Phẩm";
+    // Lấy giỏ hàng từ Session và tính tổng số lượng
+    var cart = Context.Session.Get<List<CartItem>>("Cart") ?? new List<CartItem>();
+    var totalItems = cart.Sum(i => i.Quantity);
 }
 
 <div class="row mb-4 align-items-center">
@@ -11,7 +16,11 @@
     </div>
     <div class="col-md-4 text-md-end mt-3 mt-md-0">
         <a asp-controller="Cart" asp-action="Index" class="btn btn-warning fw-bold">
-            <i class="bi bi-cart3"></i> Xem Giỏ Hàng
+            <i class="bi bi-cart3"></i> Xem Giỏ Hàng 
+            @if (totalItems > 0)
+            {
+                <span class="badge bg-danger rounded-pill ms-1">@totalItems</span>
+            }
         </a>
     </div>
 </div>
