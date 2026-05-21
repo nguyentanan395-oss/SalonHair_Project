@@ -42,9 +42,11 @@
                                         <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-warning btn-sm" title="Sửa">
                                             <i class="bi bi-pencil-square"></i> Sửa
                                         </a>
-                                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-outline-danger btn-sm btn-delete-modal" title="Xóa">
-                                            <i class="bi bi-trash"></i> Xóa
-                                        </a>
+                                        <form asp-action="Delete" asp-route-id="@item.Id" method="post" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?');">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm" title="Xóa">
+                                                <i class="bi bi-trash"></i> Xóa
+                                            </button>
+                                        </form>
                                     </div>
                                 </td>
                             </tr>
@@ -56,41 +58,7 @@
     </div>
 </div>
 
-<!-- Modal Xóa Sản phẩm -->
-<div class="modal fade" id="deleteProductModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-modal="true" role="dialog">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 bg-transparent" id="deleteModalContent">
-            <!-- Nội dung sẽ được load từ Delete.cshtml -->
-        </div>
-    </div>
-</div>
-
 <style>
     .border-gold-card { border: 1px solid rgba(212, 175, 55, 0.3) !important; }
     .custom-admin-table tbody tr { border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
 </style>
-
-@section Scripts {
-    <script>
-        $(document).ready(function () {
-            // Khởi tạo instance modal một lần duy nhất
-            const deleteModalEl = document.getElementById('deleteProductModal');
-            const deleteModal = new bootstrap.Modal(deleteModalEl);
-
-            $('.btn-delete-modal').click(function (e) {
-                e.preventDefault();
-                var url = $(this).attr('href');
-                
-                // Nạp nội dung từ server vào modal-content
-                $('#deleteModalContent').load(url, function (response, status, xhr) {
-                    if (status === "error") {
-                        console.error("Lỗi tải nội dung xóa:", xhr.status, xhr.statusText);
-                        alert("Không thể tải khung xác nhận. Vui lòng thử lại.");
-                    } else {
-                        deleteModal.show();
-                    }
-                });
-            });
-        });
-    </script>
-}

@@ -52,6 +52,28 @@ CREATE TABLE [dbo].[Products] (
     CONSTRAINT [PK_Products] PRIMARY KEY CLUSTERED ([Id] ASC)
 );
 
+-- Bảng Đơn hàng (Orders)
+CREATE TABLE [dbo].[Orders] (
+    [Id]           INT            IDENTITY (1, 1) NOT NULL,
+    [CustomerName] NVARCHAR (MAX) NOT NULL,
+    [Phone]        NVARCHAR (MAX) NOT NULL,
+    [Address]      NVARCHAR (MAX) NOT NULL,
+    [OrderDate]    DATETIME2 (7)  DEFAULT (GETDATE()) NOT NULL,
+    [TotalAmount]  FLOAT (53)     NOT NULL,
+    CONSTRAINT [PK_Orders] PRIMARY KEY CLUSTERED ([Id] ASC)
+);
+
+-- Bảng Chi tiết đơn hàng (OrderDetails)
+CREATE TABLE [dbo].[OrderDetails] (
+    [Id]        INT IDENTITY (1, 1) NOT NULL,
+    [OrderId]   INT NOT NULL,
+    [ProductId] INT NOT NULL,
+    [Quantity]  INT NOT NULL,
+    [Price]     FLOAT (53) NOT NULL,
+    CONSTRAINT [PK_OrderDetails] PRIMARY KEY CLUSTERED ([Id] ASC),
+    CONSTRAINT [FK_OrderDetails_Orders] FOREIGN KEY ([OrderId]) REFERENCES [dbo].[Orders] ([Id]) ON DELETE CASCADE
+);
+
 -- ==========================================
 -- 2. CHÈN DỮ LIỆU THỰC TẾ CHO BÁO CÁO
 -- ==========================================
