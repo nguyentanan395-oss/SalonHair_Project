@@ -114,6 +114,43 @@ button[type="submit"] {
   border-color: var(--gold-primary);
 }
 
+.border-gold-card {
+  border: 1px solid rgba(212, 175, 55, 0.3) !important;
+}
+
+/* Modal Luxury Style */
+.modal-content {
+  background-color: var(--card-dark);
+  border: 1px solid var(--gold-primary);
+  border-radius: 15px;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+  transition: transform 0.3s ease-out;
+}
+
+.modal-header {
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.modal.fade .modal-dialog {
+  transform: scale(0.8);
+  transition: transform 0.3s ease-out;
+}
+
+.modal.show .modal-dialog {
+  transform: scale(1);
+}
+
+.modal-backdrop.show {
+  opacity: 0.9 !important; /* Làm nền cực tối */
+  background-color: #000;
+  backdrop-filter: blur(12px) grayscale(100%); /* Làm mờ và biến nền thành trắng đen */
+  -webkit-backdrop-filter: blur(12px) grayscale(100%);
+}
+
+.modal-footer {
+  border-top: 1px solid rgba(212, 175, 55, 0.2);
+}
+
 /* Chân trang */
 .footer {
   background-color: #000;

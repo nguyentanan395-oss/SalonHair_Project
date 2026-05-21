@@ -42,6 +42,16 @@ CREATE TABLE [dbo].[Bookings] (
     CONSTRAINT [FK_Bookings_Services_ServiceId] FOREIGN KEY ([ServiceId]) REFERENCES [dbo].[Services] ([Id]) ON DELETE CASCADE
 );
 
+-- Bảng Sản phẩm (Products)
+CREATE TABLE [dbo].[Products] (
+    [Id]          INT            IDENTITY (1, 1) NOT NULL,
+    [Name]        NVARCHAR (MAX) NOT NULL,
+    [Price]       FLOAT (53)     NOT NULL,
+    [Description] NVARCHAR (MAX) NULL,
+    [ImageUrl]    NVARCHAR (MAX) NULL,
+    CONSTRAINT [PK_Products] PRIMARY KEY CLUSTERED ([Id] ASC)
+);
+
 -- ==========================================
 -- 2. CHÈN DỮ LIỆU THỰC TẾ CHO BÁO CÁO
 -- ==========================================
@@ -73,5 +83,11 @@ INSERT INTO [dbo].[Bookings] ([CustomerName], [Phone], [ServiceId], [BookingDate
 (N'Phạm Quang Vinh', N'0969301205', 1, '2026-02-01 13:25:00'),
 (N'Nguyễn Văn An', N'0912345678', 2, '2026-04-02 18:00:00'),
 (N'Trần Minh Hoàng', N'0988776655', 3, '2026-04-03 10:30:00');
+
+-- Chèn dữ liệu Sản phẩm mẫu (Sử dụng đường dẫn tương đối để không bị mất ảnh)
+INSERT INTO [dbo].[Products] ([Name], [Price], [Description], [ImageUrl]) VALUES 
+(N'Sáp vuốt tóc Kevin Murphy', 650000, N'Giữ nếp cực tốt, không bóng tóc.', N'/images/products/sáp-kevin.jpg'),
+(N'Tinh dầu dưỡng tóc Moroccanoil', 850000, N'Phục hồi tóc hư tổn từ sâu bên trong.', N'/images/products/moroccan-oil.jpg'),
+(N'Gôm xịt tóc Butterfly Shadow', 120000, N'Cố định form tóc suốt cả ngày dài.', N'/images/products/gom-butterfly.jpg');
 
 PRINT 'Da khoi tao Database SalonHairDB thanh cong voi du lieu mau chi tiet cho bao cao!';
