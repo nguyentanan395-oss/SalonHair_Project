@@ -241,5 +241,25 @@ namespace SalonHair.Controllers
             ViewBag.Orders = orders;
             return View(bookings);
         }
+
+        // 4. Trang thống kê tổng quan hệ thống (Dashboard) dành cho Admin
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Dashboard()
+        {
+            ViewBag.TotalBookings = await _context.Bookings.CountAsync();
+            ViewBag.TodayBookings = await _context.Bookings.CountAsync(b => b.BookingDate.Date == DateTime.Today);
+
+            ViewBag.TotalOrders = await _context.Orders.CountAsync();
+            ViewBag.TotalRevenue = await _context.Orders.SumAsync(o => o.TotalAmount);
+
+            ViewBag.TotalProducts = await _context.Products.CountAsync();
+            ViewBag.TotalServices = await _context.Services.CountAsync();
+            ViewBag.TotalCustomers = await _context.Users.CountAsync(u => u.RoleId == 1);
+
+            ViewBag.AvgRating = await _context.Reviews.AnyAsync() ? await _context.Reviews.AverageAsync(r => (double)r.Rating) : 0;
+            ViewBag.TotalReviews = await _context.Reviews.CountAsync();
+
+            return View();
+        }
     }
 }
