@@ -1,0 +1,106 @@
+@model SalonHair.Models.User
+@{
+    ViewData["Title"] = "Hồ sơ cá nhân";
+}
+
+<div class="container py-5">
+    <div class="row">
+        <!-- Cột bên trái: Thông tin tổng quan -->
+        <div class="col-lg-4 mb-4">
+            <div class="card bg-dark border-gold-card text-center p-4 shadow">
+                <div class="mb-3">
+                    <i class="bi bi-person-circle text-warning display-1"></i>
+                </div>
+                <h3 class="text-white fw-bold">@Model.Username</h3>
+                <span class="badge @(Model.RoleId == 2 ? "bg-danger" : "bg-info") text-dark mb-3 px-3 py-2">
+                    <i class="bi bi-shield-lock me-1"></i> @(Model.RoleId == 2 ? "QUẢN TRỊ VIÊN" : "KHÁCH HÀNG")
+                </span>
+                <div class="text-secondary small mt-2">
+                    <p><i class="bi bi-envelope me-2"></i>@Model.Email</p>
+                    <p><i class="bi bi-calendar-check me-2"></i>Trạng thái: @(Model.IsEmailVerified ? "Đã xác thực" : "Chưa xác thực")</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cột bên phải: Các form chỉnh sửa -->
+        <div class="col-lg-8">
+            <!-- Thông báo -->
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show bg-success text-white border-0" role="alert">
+                    <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            <!-- Section 1: Cập nhật thông tin -->
+            <div class="card bg-dark border-gold-card mb-4 shadow">
+                <div class="card-header border-bottom border-secondary py-3">
+                    <h5 class="text-warning mb-0"><i class="bi bi-person-gear me-2"></i>CHỈNH SỬA THÔNG TIN</h5>
+                </div>
+                <div class="card-body">
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <p class="text-danger small">@TempData["ErrorMessage"]</p>
+                    }
+                    <form asp-action="UpdateProfile" method="post">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label text-secondary small text-uppercase fw-bold">Tên đăng nhập</label>
+                                <input type="text" class="form-control bg-black text-muted border-secondary" value="@Model.Username" readonly />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-secondary small text-uppercase fw-bold">Địa chỉ Email</label>
+                                <input type="email" name="email" class="form-control bg-secondary text-white border-0" value="@Model.Email" required />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-secondary small text-uppercase fw-bold">Ngôn ngữ ưu tiên</label>
+                                <select name="language" class="form-select bg-secondary text-white border-0">
+                                    <option value="vi" selected="@(Model.Language == "vi")">Tiếng Việt</option>
+                                    <option value="en" selected="@(Model.Language == "en")">English</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-warning fw-bold mt-4 px-4 py-2">
+                            LƯU THAY ĐỔI
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Section 2: Đổi mật khẩu -->
+            <div class="card bg-dark border-gold-card shadow">
+                <div class="card-header border-bottom border-secondary py-3">
+                    <h5 class="text-warning mb-0"><i class="bi bi-key me-2"></i>THAY ĐỔI MẬT KHẨU</h5>
+                </div>
+                <div class="card-body">
+                    @if (TempData["PasswordError"] != null)
+                    {
+                        <div class="alert alert-danger bg-danger text-white border-0 small py-2">
+                            <i class="bi bi-exclamation-triangle me-2"></i> @TempData["PasswordError"]
+                        </div>
+                    }
+                    <form asp-action="ChangePassword" method="post">
+                        <div class="mb-3">
+                            <label class="form-label text-secondary small text-uppercase fw-bold">Mật khẩu hiện tại</label>
+                            <input type="password" name="currentPassword" class="form-control bg-secondary text-white border-0" required />
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label text-secondary small text-uppercase fw-bold">Mật khẩu mới</label>
+                                <input type="password" name="newPassword" class="form-control bg-secondary text-white border-0" required />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-secondary small text-uppercase fw-bold">Xác nhận mật khẩu mới</label>
+                                <input type="password" name="confirmPassword" class="form-control bg-secondary text-white border-0" required />
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-outline-warning fw-bold mt-4 px-4 py-2">
+                            ĐỔI MẬT KHẨU
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

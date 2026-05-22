@@ -179,5 +179,69 @@ namespace SalonHair.Controllers
             if (user == null) return NotFound();
             return View(user);
         }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateProfile(string email, string language)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == User.Identity.Name);
+            if (user == null) return NotFound();
+
+            if (string.IsNullOrEmpty(email))
+            {
+                TempData["ErrorMessage"] = "Email không được để trống.";
+                return RedirectToAction(nameof(Profile));
+            }
+
+            user.Email = email;
+            user.Language = language;
+            
+            await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = "Cập nhật thông tin thành công!";
+            return RedirectToAction(nameof(Profile));
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangePassword(string currentPassword, string newPassword, string confirmPassword)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == User.Identity.Name);
+            if (user == null) return NotFound();
+
+            // Kiểm tra mật khẩu hiện tại
+            bool isPasswordValid = false;
+            try {
+                isPasswordValid = BCrypt.Net.BCrypt.Verify(currentPassword, user.Password);
+            } catch {
+                isPasswordValid = (currentPassword == user.Password);
+            }
+
+            if (!isPasswordValid)
+            {
+                TempData["PasswordError"] = "Mật khẩu hiện tại không đúng.";
+                return RedirectToAction(nameof(Profile));
+            }
+
+            if (string.IsNullOrEmpty(newPassword) || newPassword.Length < 6)
+            {
+                TempData["PasswordError"] = "Mật khẩu mới phải từ 6 ký tự trở lên.";
+                return RedirectToAction(nameof(Profile));
+            }
+
+            if (newPassword != confirmPassword)
+            {
+                TempData["PasswordError"] = "Mật khẩu xác nhận không khớp.";
+                return RedirectToAction(nameof(Profile));
+            }
+
+            // Mã hóa mật khẩu mới
+            user.Password = BCrypt.Net.BCrypt.HashPassword(newPassword);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Đổi mật khẩu thành công!";
+            return RedirectToAction(nameof(Profile));
+        }
     }
 }
