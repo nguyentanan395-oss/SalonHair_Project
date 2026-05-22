@@ -29,3 +29,4 @@ namespace SalonHair.Models
         public bool IsEmailVerified { get; set; } = false;
     }
 }
+    

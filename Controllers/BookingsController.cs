@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +12,6 @@ using System.Threading.Tasks;
 
 namespace SalonHair.Controllers
 {
-    [Authorize(Roles = "Admin")]
     public class BookingsController : Controller
     {
         private readonly SalonContext _context;
@@ -22,6 +22,7 @@ namespace SalonHair.Controllers
         }
 
         // GET: Bookings
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Index()
         {
             // Phải có .ToListAsync() để gửi về một danh sách
@@ -30,6 +31,7 @@ namespace SalonHair.Controllers
         }
 
         // GET: Bookings/Details/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -50,6 +52,7 @@ namespace SalonHair.Controllers
         }
 
         // GET: Bookings/Create
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             ViewData["ServiceId"] = new SelectList(_context.Services, "Id", "ServiceName");
@@ -58,6 +61,7 @@ namespace SalonHair.Controllers
 
         // POST: Bookings/Create
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,CustomerName,Phone,ServiceId,BookingDate")] Booking booking)
         {
@@ -73,6 +77,7 @@ namespace SalonHair.Controllers
         }
 
         // GET: Bookings/Edit/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -93,6 +98,7 @@ namespace SalonHair.Controllers
 
         // POST: Bookings/Edit/5
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,CustomerName,Phone,ServiceId,BookingDate")] Booking booking)
         {
@@ -128,6 +134,7 @@ namespace SalonHair.Controllers
         }
 
         // GET: Bookings/Delete/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -149,6 +156,7 @@ namespace SalonHair.Controllers
 
         // POST: Bookings/Delete/5
         [HttpPost, ActionName("Delete")]
+        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
@@ -187,11 +195,51 @@ namespace SalonHair.Controllers
             {
                 _context.Add(booking);
                 await _context.SaveChangesAsync();
+                HttpContext.Session.SetString("LastPhone", booking.Phone);
                 TempData["SuccessMessage"] = "Lịch hẹn của bạn đã được ghi nhận. Salon sẽ sớm liên hệ để xác nhận.";
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("History", new { phone = booking.Phone });
             }
             ViewData["ServiceId"] = new SelectList(_context.Services, "Id", "ServiceName", booking.ServiceId);
             return View(booking);
+        }
+
+        // 3. Trang lịch sử dành cho khách (GET)
+        [AllowAnonymous]
+        public async Task<IActionResult> History(string phone)
+        {
+            // Nếu là Admin thì không cần xem lịch sử cá nhân, chuyển về trang quản lý chung
+            if (User.IsInRole("Admin"))
+            {
+                return RedirectToAction(nameof(Index));
+            }
+
+            if (string.IsNullOrEmpty(phone))
+            {
+                phone = HttpContext.Session.GetString("LastPhone");
+            }
+
+            if (string.IsNullOrEmpty(phone))
+            {
+                return View(); // Trả về view trống để khách nhập số điện thoại
+            }
+
+            // Lưu lại vào session nếu khách tự nhập tìm kiếm
+            HttpContext.Session.SetString("LastPhone", phone);
+
+            ViewBag.Phone = phone;
+            var bookings = await _context.Bookings
+                .Include(b => b.Service)
+                .Where(b => b.Phone == phone)
+                .OrderByDescending(b => b.BookingDate)
+                .ToListAsync();
+
+            var orders = await _context.Orders
+                .Where(o => o.Phone == phone)
+                .OrderByDescending(o => o.OrderDate)
+                .ToListAsync();
+
+            ViewBag.Orders = orders;
+            return View(bookings);
         }
     }
 }

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using SalonHair.Models;
@@ -30,7 +31,9 @@ namespace SalonHair.Controllers
             {
                 _context.Bookings.Add(booking);
                 _context.SaveChanges();
-                ViewBag.Message = "Đặt lịch thành công!";
+                // Lưu vào Session và chuyển hướng về trang Lịch sử
+                HttpContext.Session.SetString("LastPhone", booking.Phone);
+                return RedirectToAction("History", "Bookings", new { phone = booking.Phone });
             }
 
             ViewBag.ServiceId = new SelectList(_context.Services, "Id", "ServiceName");

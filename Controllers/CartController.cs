@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SalonHair.Models;
@@ -96,6 +97,9 @@ namespace SalonHair.Controllers
                     _context.OrderDetails.Add(orderDetail);
                 }
                 await _context.SaveChangesAsync();
+
+                // Đồng bộ số điện thoại vào Session để xem lịch sử
+                HttpContext.Session.SetString("LastPhone", order.Phone);
 
                 HttpContext.Session.Remove("Cart");
                 return View("CheckoutSuccess");

@@ -8,7 +8,18 @@
 <div class="container py-5">
     <div class="text-center mb-5">
         <h2 class="text-warning fw-bold text-uppercase"><i class="bi bi-clock-history me-2"></i> Lịch sử hoạt động</h2>
-        <p class="text-secondary">Theo dõi trạng thái đặt lịch và đơn hàng của bạn qua số điện thoại: <span class="text-white fw-bold">@phone</span></p>
+        @if (!string.IsNullOrEmpty(phone))
+        {
+            <p class="text-secondary">Dữ liệu cho số điện thoại: <span class="text-white fw-bold">@phone</span></p>
+        }
+        <div class="row justify-content-center mt-3">
+            <div class="col-md-4">
+                <form method="get" asp-action="History" class="input-group">
+                    <input type="text" name="phone" class="form-control bg-dark text-white border-warning" placeholder="Nhập số điện thoại để tra cứu..." value="@phone">
+                    <button class="btn btn-warning" type="submit"><i class="bi bi-search"></i></button>
+                </form>
+            </div>
+        </div>
     </div>
 
     <div class="row">
@@ -98,3 +109,19 @@
         </div>
     </div>
 </div>
+
+<style>
+    .table-dark tbody tr, .list-group-item {
+        transition: all 0.3s ease;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .table-dark tbody tr:hover, 
+    .list-group-item:hover {
+        background-color: transparent !important;
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+        position: relative;
+        z-index: 2;
+    }
+</style>

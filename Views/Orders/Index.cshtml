@@ -121,10 +121,14 @@
     .custom-admin-table tbody tr {
         border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         transition: all 0.2s ease;
+        position: relative;
     }
 
     .custom-admin-table tbody tr:hover {
-        background-color: rgba(212, 175, 55, 0.1) !important;
+        background-color: transparent !important;
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+        z-index: 1;
     }
 
     .table th {
