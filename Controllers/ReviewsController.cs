@@ -15,15 +15,24 @@ namespace SalonHair.Controllers
             _context = context;
         }
 
-        // KHÁCH HÀNG: Tạo đánh giá mới
-        [Authorize]
+        // GET: Reviews (Dành cho Admin quản lý)
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Index()
+        {
+            var reviews = await _context.Reviews.OrderByDescending(r => r.CreatedAt).ToListAsync();
+            return View(reviews);
+        }
+
+        // GET: Reviews/Create (Dành cho khách hàng)
+        [AllowAnonymous]
         public IActionResult Create()
         {
             return View();
         }
 
+        // POST: Reviews/Create
         [HttpPost]
-        [Authorize]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("CustomerName,Rating,Comment")] Review review)
         {
@@ -32,31 +41,26 @@ namespace SalonHair.Controllers
                 review.CreatedAt = DateTime.Now;
                 _context.Add(review);
                 await _context.SaveChangesAsync();
-                return View("Success");
+                return RedirectToAction(nameof(Success));
             }
             return View(review);
         }
 
-        // ADMIN: Xem danh sách đánh giá
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Index()
+        [AllowAnonymous]
+        public IActionResult Success()
         {
-            var reviews = await _context.Reviews.OrderByDescending(r => r.CreatedAt).ToListAsync();
-            return View(reviews);
+            return View();
         }
 
-        // ADMIN: Xóa đánh giá
+        // POST: Reviews/Delete/5
         [HttpPost, ActionName("Delete")]
         [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var review = await _context.Reviews.FindAsync(id);
-            if (review != null)
-            {
-                _context.Reviews.Remove(review);
-                await _context.SaveChangesAsync();
-            }
+            if (review != null) _context.Reviews.Remove(review);
+            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
     }
