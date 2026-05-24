@@ -5,7 +5,5 @@
 *.suo
 .DS_Store
 wwwroot/lib/
-appsettings.json
-appsettings.Development.json
 *.db
 *.log
