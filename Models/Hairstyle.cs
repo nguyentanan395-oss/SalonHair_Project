@@ -1,5 +1,4 @@
-﻿
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace SalonHair.Models
 {
@@ -16,6 +15,10 @@ namespace SalonHair.Models
 
         [Display(Name = "Dáng khuôn mặt")]
         public string? FaceShape { get; set; }
+
+        // THÊM MỚI
+        [Display(Name = "Giới tính")]
+        public string? Gender { get; set; }
 
         [Display(Name = "Mô tả")]
         public string? Description { get; set; }

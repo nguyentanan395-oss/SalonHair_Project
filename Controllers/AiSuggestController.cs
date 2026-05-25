@@ -165,7 +165,7 @@ namespace SalonHair.Controllers
             string? gender = null,
             string? ageGroup = null)
         {
-            var suggestions = await GetSuggestionsAsync(shape, gender);
+            var suggestions = await GetSuggestionsAsync(shape, gender, ageGroup);
             var tailoredSuggestions = TailorSuggestions(suggestions.Items, gender, ageGroup);
 
             return new AiSuggestionViewModel
@@ -184,23 +184,25 @@ namespace SalonHair.Controllers
             };
         }
 
-        private async Task<(List<Hairstyle> Items, bool UsedFallbackData)> GetSuggestionsAsync(string shape, string? gender)
+        private async Task<(List<Hairstyle> Items, bool UsedFallbackData)> GetSuggestionsAsync(string shape, string? gender, string? ageGroup)
         {
             try
             {
                 var suggestions = (await _context.Hairstyles
-                        .Where(h => h.FaceShape != null)
-                        .ToListAsync())
-                    .Where(h => NormalizeShape(h.FaceShape) == shape)
-                    .ToList();
+        .Where(h => h.FaceShape != null && h.Gender != null)
+        .ToListAsync())
+    .Where(h =>
+        NormalizeShape(h.FaceShape) == shape &&
+        NormalizeGender(h.Gender) == gender)
+    .ToList();
 
                 if (suggestions.Any())
                 {
-                    var genderFilteredSuggestions = FilterSuggestionsByGender(suggestions, gender);
-                    if (genderFilteredSuggestions.Any())
+                    var profileFilteredSuggestions = ApplyProfileFilters(suggestions, gender, ageGroup);
+                    if (profileFilteredSuggestions.Any())
                     {
-                        ApplyCuratedImages(genderFilteredSuggestions);
-                        return (genderFilteredSuggestions, false);
+                        ApplyCuratedImages(profileFilteredSuggestions);
+                        return (profileFilteredSuggestions, false);
                     }
                 }
             }
@@ -210,8 +212,9 @@ namespace SalonHair.Controllers
             }
 
             var fallbackSuggestions = GetFallbackSuggestions(shape, gender);
-            ApplyCuratedImages(fallbackSuggestions);
-            return (fallbackSuggestions, true);
+            var fallbackFilteredSuggestions = ApplyProfileFilters(fallbackSuggestions, gender, ageGroup);
+            ApplyCuratedImages(fallbackFilteredSuggestions);
+            return (fallbackFilteredSuggestions, true);
         }
 
         private static List<Hairstyle> TailorSuggestions(List<Hairstyle> suggestions, string? gender, string? ageGroup)
@@ -566,6 +569,18 @@ namespace SalonHair.Controllers
             return tips;
         }
 
+        private static List<Hairstyle> ApplyProfileFilters(List<Hairstyle> suggestions, string? gender, string? ageGroup)
+        {
+            var genderFiltered = FilterSuggestionsByGender(suggestions, gender);
+            if (!genderFiltered.Any())
+            {
+                genderFiltered = suggestions;
+            }
+
+            var ageFiltered = FilterSuggestionsByAge(genderFiltered, ageGroup);
+            return ageFiltered.Any() ? ageFiltered : genderFiltered;
+        }
+
         private static List<Hairstyle> FilterSuggestionsByGender(List<Hairstyle> suggestions, string? gender)
         {
             if (string.IsNullOrWhiteSpace(gender))
@@ -575,6 +590,20 @@ namespace SalonHair.Controllers
 
             var filteredSuggestions = suggestions
                 .Where(item => ShouldIncludeSuggestionForGender(item.StyleName, gender))
+                .ToList();
+
+            return filteredSuggestions.Any() ? filteredSuggestions : suggestions;
+        }
+
+        private static List<Hairstyle> FilterSuggestionsByAge(List<Hairstyle> suggestions, string? ageGroup)
+        {
+            if (string.IsNullOrWhiteSpace(ageGroup))
+            {
+                return suggestions;
+            }
+
+            var filteredSuggestions = suggestions
+                .Where(item => ShouldIncludeSuggestionForAge(item.StyleName, ageGroup))
                 .ToList();
 
             return filteredSuggestions.Any() ? filteredSuggestions : suggestions;
@@ -592,6 +621,33 @@ namespace SalonHair.Controllers
             if (string.Equals(gender, "Nữ", StringComparison.OrdinalIgnoreCase))
             {
                 return IsFemaleStyle(normalizedStyle) || IsUnisexStyle(normalizedStyle);
+            }
+
+            return true;
+        }
+
+        private static bool ShouldIncludeSuggestionForAge(string? styleName, string ageGroup)
+        {
+            var normalizedStyle = NormalizeStyleKey(styleName);
+
+            if (string.Equals(ageGroup, "Dưới 18", StringComparison.OrdinalIgnoreCase))
+            {
+                return IsYouthfulStyle(normalizedStyle) || IsUnisexStyle(normalizedStyle);
+            }
+
+            if (string.Equals(ageGroup, "18-30", StringComparison.OrdinalIgnoreCase))
+            {
+                return IsModernStyle(normalizedStyle) || IsUnisexStyle(normalizedStyle);
+            }
+
+            if (string.Equals(ageGroup, "31-45", StringComparison.OrdinalIgnoreCase))
+            {
+                return IsBalancedStyle(normalizedStyle) || IsUnisexStyle(normalizedStyle);
+            }
+
+            if (string.Equals(ageGroup, "46+", StringComparison.OrdinalIgnoreCase))
+            {
+                return IsMatureStyle(normalizedStyle) || IsUnisexStyle(normalizedStyle);
             }
 
             return true;
@@ -629,6 +685,51 @@ namespace SalonHair.Controllers
             return normalizedStyle.Contains("part")
                 || normalizedStyle.Contains("crop")
                 || normalizedStyle.Contains("swept");
+        }
+
+        private static bool IsYouthfulStyle(string normalizedStyle)
+        {
+            return normalizedStyle.Contains("wave")
+                || normalizedStyle.Contains("fringe")
+                || normalizedStyle.Contains("quiff")
+                || normalizedStyle.Contains("pompadour")
+                || normalizedStyle.Contains("crop")
+                || normalizedStyle.Contains("loose")
+                || normalizedStyle.Contains("textured");
+        }
+
+        private static bool IsModernStyle(string normalizedStyle)
+        {
+            return normalizedStyle.Contains("fade")
+                || normalizedStyle.Contains("quiff")
+                || normalizedStyle.Contains("layer")
+                || normalizedStyle.Contains("wave")
+                || normalizedStyle.Contains("fringe")
+                || normalizedStyle.Contains("part")
+                || normalizedStyle.Contains("swept")
+                || normalizedStyle.Contains("crop");
+        }
+
+        private static bool IsBalancedStyle(string normalizedStyle)
+        {
+            return normalizedStyle.Contains("cut")
+                || normalizedStyle.Contains("part")
+                || normalizedStyle.Contains("layer")
+                || normalizedStyle.Contains("swept")
+                || normalizedStyle.Contains("ivy")
+                || normalizedStyle.Contains("slick")
+                || normalizedStyle.Contains("side");
+        }
+
+        private static bool IsMatureStyle(string normalizedStyle)
+        {
+            return normalizedStyle.Contains("cut")
+                || normalizedStyle.Contains("part")
+                || normalizedStyle.Contains("layer")
+                || normalizedStyle.Contains("swept")
+                || normalizedStyle.Contains("crew")
+                || normalizedStyle.Contains("classic")
+                || normalizedStyle.Contains("slick");
         }
 
         private static List<Hairstyle> GetFallbackSuggestions(string shape, string? gender)
