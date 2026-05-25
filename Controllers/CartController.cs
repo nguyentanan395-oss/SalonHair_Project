@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SalonHair.Models;
-using SalonHair.Models;
 
 namespace SalonHair.Controllers
 {
@@ -79,6 +78,15 @@ namespace SalonHair.Controllers
 
             if (ModelState.IsValid)
             {
+                var currentCustomer = await GetCurrentCustomerAsync(order.Phone);
+                if (currentCustomer != null)
+                {
+                    order.CustomerId = currentCustomer.Id;
+                    order.CustomerName = string.IsNullOrWhiteSpace(order.CustomerName)
+                        ? currentCustomer.Name
+                        : order.CustomerName;
+                }
+
                 order.OrderDate = DateTime.Now;
                 order.TotalAmount = cart.Sum(item => item.Product.Price * item.Quantity);
 
@@ -98,13 +106,58 @@ namespace SalonHair.Controllers
                 }
                 await _context.SaveChangesAsync();
 
-                // Đồng bộ số điện thoại vào Session để xem lịch sử
                 HttpContext.Session.SetString("LastPhone", order.Phone);
 
                 HttpContext.Session.Remove("Cart");
                 return View("CheckoutSuccess");
             }
             return View(order);
+        }
+
+        private async Task<Customer?> GetCurrentCustomerAsync(string? phone = null)
+        {
+            if (User.Identity?.IsAuthenticated != true)
+            {
+                return null;
+            }
+
+            var userName = User.Identity?.Name;
+            if (string.IsNullOrWhiteSpace(userName))
+            {
+                return null;
+            }
+
+            var user = await _context.Users
+                .Include(u => u.Customer)
+                .FirstOrDefaultAsync(u => u.Username == userName);
+
+            if (user == null)
+            {
+                return null;
+            }
+
+            if (user.Customer != null)
+            {
+                var customer = user.Customer;
+                if (!string.IsNullOrWhiteSpace(phone) && string.IsNullOrWhiteSpace(customer.Phone))
+                {
+                    customer.Phone = phone;
+                    await _context.SaveChangesAsync();
+                }
+                return customer;
+            }
+
+            var createdCustomer = new Customer
+            {
+                UserId = user.Id,
+                Name = user.Username,
+                Email = user.Email,
+                Phone = phone ?? string.Empty
+            };
+
+            _context.Customers.Add(createdCustomer);
+            await _context.SaveChangesAsync();
+            return createdCustomer;
         }
     }
 }

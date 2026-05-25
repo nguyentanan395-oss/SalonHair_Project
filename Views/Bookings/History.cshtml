@@ -2,24 +2,33 @@
 @{
     ViewData["Title"] = "Lịch sử hoạt động";
     var orders = ViewBag.Orders as IEnumerable<SalonHair.Models.Order>;
-    string phone = ViewBag.Phone as string;
+    bool isAuthenticated = ViewBag.IsAuthenticated as bool? ?? false;
+    string? phone = ViewBag.Phone as string;
+    string? userName = ViewBag.UserName as string;
 }
 
 <div class="container py-5">
     <div class="text-center mb-5">
         <h2 class="text-warning fw-bold text-uppercase"><i class="bi bi-clock-history me-2"></i> Lịch sử hoạt động</h2>
-        @if (!string.IsNullOrEmpty(phone))
+        @if (isAuthenticated)
+        {
+            <p class="text-secondary">Chỉ hiển thị lịch sử của tài khoản: <span class="text-white fw-bold">@userName</span></p>
+        }
+        else if (!string.IsNullOrEmpty(phone))
         {
             <p class="text-secondary">Dữ liệu cho số điện thoại: <span class="text-white fw-bold">@phone</span></p>
         }
-        <div class="row justify-content-center mt-3">
-            <div class="col-md-4">
-                <form method="get" asp-action="History" class="input-group">
-                    <input type="text" name="phone" class="form-control bg-dark text-white border-warning" placeholder="Nhập số điện thoại để tra cứu..." value="@phone">
-                    <button class="btn btn-warning" type="submit"><i class="bi bi-search"></i></button>
-                </form>
+        @if (!isAuthenticated)
+        {
+            <div class="row justify-content-center mt-3">
+                <div class="col-md-4">
+                    <form method="get" asp-action="History" class="input-group">
+                        <input type="text" name="phone" class="form-control bg-dark text-white border-warning" placeholder="Nhập số điện thoại để tra cứu..." value="@phone">
+                        <button class="btn btn-warning" type="submit"><i class="bi bi-search"></i></button>
+                    </form>
+                </div>
             </div>
-        </div>
+        }
     </div>
 
     <div class="row">
