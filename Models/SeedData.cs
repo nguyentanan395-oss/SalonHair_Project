@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using SalonHair.Models.SalonHair.Models;
+using SalonHair.Models;
 
 namespace SalonHair.Models
 {

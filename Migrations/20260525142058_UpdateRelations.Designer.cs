@@ -5,15 +5,15 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using SalonHair.Models.SalonHair.Models;
+using SalonHair.Models;
 
 #nullable disable
 
 namespace SalonHair.Migrations
 {
     [DbContext(typeof(SalonContext))]
-    [Migration("20260522065550_CartItem")]
-    partial class CartItem
+    [Migration("20260525142058_UpdateRelations")]
+    partial class UpdateRelations
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -36,6 +36,9 @@ namespace SalonHair.Migrations
                     b.Property<DateTime>("BookingDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("CustomerId")
+                        .HasColumnType("int");
+
                     b.Property<string>("CustomerName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -49,9 +52,43 @@ namespace SalonHair.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CustomerId");
+
                     b.HasIndex("ServiceId");
 
                     b.ToTable("Bookings");
+                });
+
+            modelBuilder.Entity("SalonHair.Models.Customer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique()
+                        .HasFilter("[UserId] IS NOT NULL");
+
+                    b.ToTable("Customers");
                 });
 
             modelBuilder.Entity("SalonHair.Models.Hairstyle", b =>
@@ -92,6 +129,9 @@ namespace SalonHair.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("CustomerId")
+                        .HasColumnType("int");
+
                     b.Property<string>("CustomerName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -107,6 +147,8 @@ namespace SalonHair.Migrations
                         .HasColumnType("float");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
 
                     b.ToTable("Orders");
                 });
@@ -181,14 +223,34 @@ namespace SalonHair.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("CustomerId")
+                        .HasColumnType("int");
+
                     b.Property<string>("CustomerName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("HairstyleId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ProductId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Rating")
                         .HasColumnType("int");
 
+                    b.Property<int?>("ServiceId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("HairstyleId");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("ServiceId");
 
                     b.ToTable("Reviews");
                 });
@@ -218,31 +280,6 @@ namespace SalonHair.Migrations
                             RoleId = 2,
                             RoleName = "Admin"
                         });
-                });
-
-            modelBuilder.Entity("SalonHair.Models.SalonHair.Models.Customer", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Phone")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Customers");
                 });
 
             modelBuilder.Entity("SalonHair.Models.Service", b =>
@@ -313,13 +350,40 @@ namespace SalonHair.Migrations
 
             modelBuilder.Entity("SalonHair.Models.Booking", b =>
                 {
+                    b.HasOne("SalonHair.Models.Customer", "Customer")
+                        .WithMany("Bookings")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("SalonHair.Models.Service", "Service")
-                        .WithMany()
+                        .WithMany("Bookings")
                         .HasForeignKey("ServiceId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.Navigation("Customer");
+
                     b.Navigation("Service");
+                });
+
+            modelBuilder.Entity("SalonHair.Models.Customer", b =>
+                {
+                    b.HasOne("SalonHair.Models.User", "User")
+                        .WithOne("Customer")
+                        .HasForeignKey("SalonHair.Models.Customer", "UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SalonHair.Models.Order", b =>
+                {
+                    b.HasOne("SalonHair.Models.Customer", "Customer")
+                        .WithMany("Orders")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Customer");
                 });
 
             modelBuilder.Entity("SalonHair.Models.OrderDetail", b =>
@@ -331,9 +395,9 @@ namespace SalonHair.Migrations
                         .IsRequired();
 
                     b.HasOne("SalonHair.Models.Product", "Product")
-                        .WithMany()
+                        .WithMany("OrderDetails")
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Order");
@@ -341,15 +405,60 @@ namespace SalonHair.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("SalonHair.Models.Review", b =>
+                {
+                    b.HasOne("SalonHair.Models.Customer", "Customer")
+                        .WithMany("Reviews")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("SalonHair.Models.Hairstyle", "Hairstyle")
+                        .WithMany("Reviews")
+                        .HasForeignKey("HairstyleId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("SalonHair.Models.Product", "Product")
+                        .WithMany("Reviews")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("SalonHair.Models.Service", "Service")
+                        .WithMany("Reviews")
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("Hairstyle");
+
+                    b.Navigation("Product");
+
+                    b.Navigation("Service");
+                });
+
             modelBuilder.Entity("SalonHair.Models.User", b =>
                 {
                     b.HasOne("SalonHair.Models.Role", "Role")
                         .WithMany("Users")
                         .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("SalonHair.Models.Customer", b =>
+                {
+                    b.Navigation("Bookings");
+
+                    b.Navigation("Orders");
+
+                    b.Navigation("Reviews");
+                });
+
+            modelBuilder.Entity("SalonHair.Models.Hairstyle", b =>
+                {
+                    b.Navigation("Reviews");
                 });
 
             modelBuilder.Entity("SalonHair.Models.Order", b =>
@@ -357,9 +466,28 @@ namespace SalonHair.Migrations
                     b.Navigation("OrderDetails");
                 });
 
+            modelBuilder.Entity("SalonHair.Models.Product", b =>
+                {
+                    b.Navigation("OrderDetails");
+
+                    b.Navigation("Reviews");
+                });
+
             modelBuilder.Entity("SalonHair.Models.Role", b =>
                 {
                     b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("SalonHair.Models.Service", b =>
+                {
+                    b.Navigation("Bookings");
+
+                    b.Navigation("Reviews");
+                });
+
+            modelBuilder.Entity("SalonHair.Models.User", b =>
+                {
+                    b.Navigation("Customer");
                 });
 #pragma warning restore 612, 618
         }

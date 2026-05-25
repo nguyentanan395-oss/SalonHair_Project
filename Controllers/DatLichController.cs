@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using SalonHair.Models;
-using SalonHair.Models.SalonHair.Models;
+using SalonHair.Models;
 using System.Linq;
 
 namespace SalonHair.Controllers

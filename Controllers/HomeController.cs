@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SalonHair.Models;
 using System.Diagnostics;
+using SalonHair.Models;
 
 namespace SalonHair.Controllers
 {

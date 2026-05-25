@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SalonHair.Models;
-using SalonHair.Models.SalonHair.Models;
+using SalonHair.Models;
 using SalonHair.Services;
 using System.Globalization;
 using System.Text;

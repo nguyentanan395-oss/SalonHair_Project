@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SalonHair.Models;
-using SalonHair.Models.SalonHair.Models;
+using SalonHair.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;

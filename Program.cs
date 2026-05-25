@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.StaticFiles;
 using SalonHair.Models;
-using SalonHair.Models.SalonHair.Models;
+using SalonHair.Models;
 using SalonHair.Services;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<SalonContext>(options =>
