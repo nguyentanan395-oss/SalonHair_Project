@@ -72,6 +72,30 @@
                     </div>
                 </div>
 
+                <div class="profile-controls mt-4">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="genderSelect" class="form-label text-light">Giới tính</label>
+                            <select id="genderSelect" class="form-select bg-dark text-light border-secondary">
+                                <option value="">-- Chọn giới tính --</option>
+                                <option value="Nam">Nam</option>
+                                <option value="Nữ">Nữ</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="ageGroupSelect" class="form-label text-light">Độ tuổi</label>
+                            <select id="ageGroupSelect" class="form-select bg-dark text-light border-secondary">
+                                <option value="">-- Chọn nhóm tuổi --</option>
+                                <option value="Dưới 18">Dưới 18</option>
+                                <option value="18-30">18-30</option>
+                                <option value="31-45">31-45</option>
+                                <option value="46+">46+</option>
+                            </select>
+                        </div>
+                    </div>
+                    <p id="profileHint" class="small text-light-emphasis mt-2 mb-0">Vui lòng chọn giới tính và nhóm tuổi trước khi phân tích để AI tối ưu gợi ý.</p>
+                </div>
+
                 <div class="control-panel mt-4">
                     <div class="d-flex flex-wrap gap-2">
                         <button type="button" id="startCameraButton" class="btn btn-warning btn-lg px-4">
@@ -160,10 +184,10 @@
                         <h3 class="h6 text-light">Fallback thủ công</h3>
                         <p class="small text-light-emphasis">Nếu webcam chưa ổn, bạn vẫn có thể chọn tay dáng mặt để tư vấn nhanh cho khách.</p>
                         <div class="d-flex flex-wrap gap-2">
-                            <a class="btn btn-outline-light btn-sm" href="@Url.Action("Result", "AiSuggest", new { shape = "Tròn" })">Mặt tròn</a>
-                            <a class="btn btn-outline-light btn-sm" href="@Url.Action("Result", "AiSuggest", new { shape = "Vuông" })">Mặt vuông</a>
-                            <a class="btn btn-outline-light btn-sm" href="@Url.Action("Result", "AiSuggest", new { shape = "Trái xoan" })">Trái xoan</a>
-                            <a class="btn btn-outline-light btn-sm" href="@Url.Action("Result", "AiSuggest", new { shape = "Dài" })">Mặt dài</a>
+                            <a class="btn btn-outline-light btn-sm manual-shape-link" data-shape="Tròn" href="@Url.Action("Result", "AiSuggest", new { shape = "Tròn" })">Mặt tròn</a>
+                            <a class="btn btn-outline-light btn-sm manual-shape-link" data-shape="Vuông" href="@Url.Action("Result", "AiSuggest", new { shape = "Vuông" })">Mặt vuông</a>
+                            <a class="btn btn-outline-light btn-sm manual-shape-link" data-shape="Trái xoan" href="@Url.Action("Result", "AiSuggest", new { shape = "Trái xoan" })">Trái xoan</a>
+                            <a class="btn btn-outline-light btn-sm manual-shape-link" data-shape="Dài" href="@Url.Action("Result", "AiSuggest", new { shape = "Dài" })">Mặt dài</a>
                         </div>
                     </div>
                 </div>
@@ -241,6 +265,7 @@
     }
 
     .control-panel,
+    .profile-controls,
     .scan-shell,
     .result-summary-card,
     .tips-card {

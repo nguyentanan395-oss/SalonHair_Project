@@ -6,6 +6,10 @@ namespace SalonHair.Models
     {
         public string FaceShape { get; set; } = string.Empty;
 
+        public string? Gender { get; set; }
+
+        public string? AgeGroup { get; set; }
+
         public double Confidence { get; set; }
 
         public string ConfidenceLabel { get; set; } = string.Empty;

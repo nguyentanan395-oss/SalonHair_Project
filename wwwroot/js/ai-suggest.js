@@ -17,6 +17,9 @@ if (appRoot) {
     resetButton: document.getElementById("resetAnalysisButton"),
     startCameraButton: document.getElementById("startCameraButton"),
     stopCameraButton: document.getElementById("stopCameraButton"),
+    genderSelect: document.getElementById("genderSelect"),
+    ageGroupSelect: document.getElementById("ageGroupSelect"),
+    profileHint: document.getElementById("profileHint"),
     video: document.getElementById("webcamVideo"),
     canvas: document.getElementById("facePreviewCanvas"),
     emptyState: document.getElementById("scanEmptyState"),
@@ -70,6 +73,8 @@ if (appRoot) {
     lastLandmarksJson: "",
     queuedAnalysisRequest: null,
     runtimeModel: null,
+    selectedGender: "",
+    selectedAgeGroup: "",
     clientSessionId: getClientSessionId(),
     analysisSequence: 0,
     activeAnalysisToken: 0,
@@ -100,6 +105,7 @@ if (appRoot) {
   bindEvents();
   initializeFeedbackButtonLabels();
   updateBatchUi();
+  updateAnalysisControls();
   boot();
 
   async function boot() {
@@ -147,7 +153,7 @@ if (appRoot) {
         "AI đã sẵn sàng. Bạn có thể mở webcam trực tiếp hoặc tải ảnh chân dung.",
         "ready",
       );
-      dom.startCameraButton.disabled = false;
+      updateAnalysisControls();
       updateBatchUi();
       await loadRuntimeModel();
     } catch (error) {
@@ -166,6 +172,11 @@ if (appRoot) {
     dom.resetButton?.addEventListener("click", resetAnalysis);
     dom.startCameraButton?.addEventListener("click", startCamera);
     dom.stopCameraButton?.addEventListener("click", stopCamera);
+    dom.genderSelect?.addEventListener("change", handleProfileSelectionChange);
+    dom.ageGroupSelect?.addEventListener(
+      "change",
+      handleProfileSelectionChange,
+    );
     dom.feedbackAcceptButton?.addEventListener("click", () => {
       if (state.lastAnalysis) {
         saveFeedback(state.lastAnalysis.shape);
@@ -200,6 +211,15 @@ if (appRoot) {
     if (!state.faceLandmarker) {
       setStatus(
         "Mô hình AI chưa sẵn sàng. Hãy đợi thêm một chút rồi thử lại.",
+        "error",
+      );
+      return;
+    }
+
+    const profile = getSelectedProfile();
+    if (!profile.ready) {
+      setStatus(
+        "Vui lòng chọn giới tính và nhóm tuổi trước khi mở webcam để AI tối ưu gợi ý.",
         "error",
       );
       return;
@@ -297,7 +317,7 @@ if (appRoot) {
     dom.video.classList.add("is-hidden");
     dom.video.classList.remove("is-mirrored");
     dom.canvas.classList.remove("is-mirrored");
-    dom.startCameraButton.disabled = !state.faceLandmarker;
+    updateAnalysisControls();
     dom.stopCameraButton.disabled = true;
   }
 
@@ -316,6 +336,7 @@ if (appRoot) {
           `${file.name} | ${image.naturalWidth} x ${image.naturalHeight}`,
         enableAnalyzeButton: true,
       });
+      updateAnalysisControls();
       setStatus(
         "Ảnh đã sẵn sàng. Bấm phân tích để nhận gợi ý kiểu tóc.",
         "ready",
@@ -344,6 +365,15 @@ if (appRoot) {
   async function analyzeImage() {
     if (!state.faceLandmarker || !state.image) {
       setStatus("Bạn cần tải ảnh chân dung trước khi phân tích.", "error");
+      return;
+    }
+
+    const profile = getSelectedProfile();
+    if (!profile.ready) {
+      setStatus(
+        "Vui lòng chọn giới tính và nhóm tuổi trước khi phân tích ảnh.",
+        "error",
+      );
       return;
     }
 
@@ -464,6 +494,16 @@ if (appRoot) {
     const now = Date.now();
     const forceFreshSuggestion =
       isStillImageSource(source) || dom.results.classList.contains("d-none");
+    const profile = getSelectedProfile();
+
+    if (!profile.ready) {
+      setStatus(
+        "Vui lòng chọn giới tính và nhóm tuổi trước khi AI gợi ý kiểu tóc.",
+        "error",
+      );
+      return;
+    }
+
     if (state.isSending) {
       if (forceFreshSuggestion) {
         state.queuedAnalysisRequest = {
@@ -495,6 +535,8 @@ if (appRoot) {
         },
         body: JSON.stringify({
           detectedShape: analysis.shape,
+          gender: profile.gender,
+          ageGroup: profile.ageGroup,
           confidence: analysis.confidence,
           faceLengthRatio: metrics.lengthToCheekRatio,
           foreheadWidthRatio: metrics.foreheadToCheekRatio,
@@ -594,6 +636,8 @@ if (appRoot) {
   }
 
   async function postCurrentFeedbackSample(correctedShape) {
+    const profile = getSelectedProfile();
+
     const response = await fetch(appRoot.dataset.feedbackUrl, {
       method: "POST",
       headers: {
@@ -602,6 +646,8 @@ if (appRoot) {
       body: JSON.stringify({
         predictedShape: state.lastAnalysis.shape,
         correctedShape,
+        gender: profile.gender,
+        ageGroup: profile.ageGroup,
         confidence: state.lastAnalysis.confidence,
         faceLengthRatio: state.lastMetrics.lengthToCheekRatio,
         foreheadWidthRatio: state.lastMetrics.foreheadToCheekRatio,
@@ -913,6 +959,7 @@ if (appRoot) {
     state.lastSentShape = "";
     state.lastSentAt = 0;
     clearFeedbackState();
+    updateAnalysisControls();
     setStatus(
       "Đã làm mới vùng quét. Bạn có thể mở webcam hoặc chọn ảnh khác.",
       "ready",
@@ -922,7 +969,7 @@ if (appRoot) {
   function clearImageState() {
     state.image = null;
     dom.fileInput.value = "";
-    dom.analyzeButton.disabled = true;
+    updateAnalysisControls();
     clearFeedbackState();
 
     if (state.objectUrl) {
@@ -958,8 +1005,11 @@ if (appRoot) {
         dom.emptyState.classList.add("d-none");
         dom.uploadHint.textContent = hintTextFactory(image);
         drawImageToCanvas();
+        updateAnalysisControls();
         dom.analyzeButton.disabled =
-          !enableAnalyzeButton || !state.faceLandmarker;
+          !enableAnalyzeButton ||
+          !state.faceLandmarker ||
+          !isProfileSelectionReady();
         resolve(image);
       };
 
@@ -1415,6 +1465,138 @@ if (appRoot) {
     );
   }
 
+  function handleProfileSelectionChange() {
+    state.selectedGender = normalizeGenderValue(dom.genderSelect?.value || "");
+    state.selectedAgeGroup = normalizeAgeValue(dom.ageGroupSelect?.value || "");
+    updateAnalysisControls();
+    updateManualFallbackLinks();
+    updateProfileHint();
+
+    if (!isProfileSelectionReady()) {
+      setStatus(
+        "Vui lòng chọn giới tính và nhóm tuổi để AI tối ưu gợi ý.",
+        "error",
+      );
+      return;
+    }
+
+    setStatus(
+      "Thông tin hồ sơ đã cập nhật. Bạn có thể tiếp tục phân tích.",
+      "ready",
+    );
+  }
+
+  function getSelectedProfile() {
+    const ready = isProfileSelectionReady();
+
+    return {
+      gender: state.selectedGender,
+      ageGroup: state.selectedAgeGroup,
+      ready,
+    };
+  }
+
+  function isProfileSelectionReady() {
+    return Boolean(state.selectedGender && state.selectedAgeGroup);
+  }
+
+  function updateAnalysisControls() {
+    const profileReady = isProfileSelectionReady();
+
+    if (dom.analyzeButton) {
+      dom.analyzeButton.disabled =
+        !state.faceLandmarker || !state.image || !profileReady;
+    }
+
+    if (dom.startCameraButton) {
+      dom.startCameraButton.disabled =
+        !state.faceLandmarker || !profileReady || state.isCameraRunning;
+    }
+  }
+
+  function updateProfileHint() {
+    if (!dom.profileHint) {
+      return;
+    }
+
+    dom.profileHint.textContent = isProfileSelectionReady()
+      ? `AI sẽ dùng hồ sơ ${state.selectedGender} • ${state.selectedAgeGroup} để điều chỉnh gợi ý.`
+      : "Vui lòng chọn giới tính và nhóm tuổi trước khi phân tích để AI tối ưu gợi ý.";
+  }
+
+  function updateManualFallbackLinks() {
+    const profile = getSelectedProfile();
+
+    document.querySelectorAll(".manual-shape-link").forEach((link) => {
+      const shape = link.dataset.shape || "";
+      const query = new URLSearchParams({
+        shape,
+        gender: profile.gender,
+        ageGroup: profile.ageGroup,
+      });
+      link.href = `${appRoot.dataset.analyzeUrl.replace("/Analyze", "/Result")}?${query.toString()}`;
+    });
+  }
+
+  function formatProfileSummary(gender, ageGroup) {
+    const validGender = normalizeGenderValue(gender || "");
+    const validAgeGroup = normalizeAgeValue(ageGroup || "");
+
+    if (!validGender || !validAgeGroup) {
+      return "Chưa chọn giới tính/độ tuổi";
+    }
+
+    return `Hồ sơ: ${validGender} • ${validAgeGroup}`;
+  }
+
+  function normalizeGenderValue(value) {
+    const normalized = String(value || "")
+      .trim()
+      .toLowerCase();
+
+    if (normalized === "nam") {
+      return "Nam";
+    }
+
+    if (normalized === "nữ" || normalized === "nu") {
+      return "Nữ";
+    }
+
+    return "";
+  }
+
+  function normalizeAgeValue(value) {
+    const normalized = String(value || "")
+      .trim()
+      .toLowerCase();
+
+    if (
+      normalized === "dưới 18" ||
+      normalized === "duoi 18" ||
+      normalized === "under 18"
+    ) {
+      return "Dưới 18";
+    }
+
+    if (normalized === "18-30" || normalized === "18 30") {
+      return "18-30";
+    }
+
+    if (normalized === "31-45" || normalized === "31 45") {
+      return "31-45";
+    }
+
+    if (
+      normalized === "46+" ||
+      normalized === "46" ||
+      normalized === "46 trở lên"
+    ) {
+      return "46+";
+    }
+
+    return "";
+  }
+
   function captureSnapshotDataUrl() {
     if (state.image) {
       const snapshotCanvas = document.createElement("canvas");
@@ -1480,7 +1662,7 @@ if (appRoot) {
     dom.resultTitle.textContent = `AI gợi ý kiểu tóc cho khuôn mặt ${payload.faceShape}`;
     dom.resultSummary.textContent = payload.summary;
     dom.resultConfidence.textContent = `Độ tự tin: ${formatPercent(payload.confidence)}`;
-    dom.resultMeta.textContent = payload.confidenceLabel;
+    dom.resultMeta.textContent = `${payload.confidenceLabel} • ${formatProfileSummary(payload.gender, payload.ageGroup)}`;
 
     dom.tips.innerHTML = "";
     for (const tip of payload.stylingTips) {

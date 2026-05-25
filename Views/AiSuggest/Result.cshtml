@@ -10,6 +10,7 @@
             <span class="eyebrow">AI HAIRSTYLE MATCH</span>
             <h1 class="display-6 fw-bold text-light mt-3">Gợi ý kiểu tóc cho khuôn mặt @Model.FaceShape</h1>
             <p class="lead text-light-emphasis mt-3 mb-2">@Model.Summary</p>
+            <p class="text-light-emphasis mb-2">Hồ sơ đang áp dụng: @(string.IsNullOrWhiteSpace(Model.Gender) || string.IsNullOrWhiteSpace(Model.AgeGroup) ? "Chưa chọn giới tính/độ tuổi" : $"{Model.Gender} • {Model.AgeGroup}")</p>
             <p class="text-warning mb-0">Độ tự tin ước tính: @(Model.Confidence.ToString("P0"))</p>
         </div>
 
