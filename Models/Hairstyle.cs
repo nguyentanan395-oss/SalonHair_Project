@@ -16,9 +16,13 @@ namespace SalonHair.Models
         [Display(Name = "Dáng khuôn mặt")]
         public string? FaceShape { get; set; }
 
-        // THÊM MỚI
+        // GIỚI TÍNH
         [Display(Name = "Giới tính")]
         public string? Gender { get; set; }
+
+        // THÊM MỚI
+        [Display(Name = "Độ tuổi")]
+        public string? AgeGroup { get; set; }
 
         [Display(Name = "Mô tả")]
         public string? Description { get; set; }

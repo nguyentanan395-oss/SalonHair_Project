@@ -167,6 +167,7 @@ namespace SalonHair.Controllers
         {
             var suggestions = await GetSuggestionsAsync(shape, gender, ageGroup);
             var tailoredSuggestions = TailorSuggestions(suggestions.Items, gender, ageGroup);
+            NormalizeSuggestionImageUrls(tailoredSuggestions);
 
             return new AiSuggestionViewModel
             {
@@ -193,7 +194,8 @@ namespace SalonHair.Controllers
         .ToListAsync())
     .Where(h =>
         NormalizeShape(h.FaceShape) == shape &&
-        NormalizeGender(h.Gender) == gender)
+        NormalizeGender(h.Gender) == gender &&
+        NormalizeAgeGroup(h.AgeGroup) == ageGroup)
     .ToList();
 
                 if (suggestions.Any())
@@ -314,6 +316,39 @@ namespace SalonHair.Controllers
             }
         }
 
+        private void NormalizeSuggestionImageUrls(List<Hairstyle> suggestions)
+        {
+            foreach (var suggestion in suggestions)
+            {
+                if (string.IsNullOrWhiteSpace(suggestion.ImageUrl))
+                {
+                    continue;
+                }
+                if (string.IsNullOrWhiteSpace(suggestion.ImageUrl)) continue;
+
+                if (suggestion.ImageUrl.StartsWith("~") || suggestion.ImageUrl.StartsWith("/"))
+                // Kiểm tra xem có phải là URL tuyệt đối (http/https) không
+                bool isAbsolute = Uri.TryCreate(suggestion.ImageUrl, UriKind.Absolute, out var uriResult)
+                    && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
+
+                if (!isAbsolute)
+                {
+                    suggestion.ImageUrl = Url.Content(suggestion.ImageUrl);
+                    var path = suggestion.ImageUrl.Trim();
+                    // Đảm bảo đường dẫn local luôn bắt đầu bằng ~/ để Url.Content xử lý chính xác
+                    if (!path.StartsWith("~") && !path.StartsWith("/"))
+                    {
+                        path = "~/" + path;
+                    }
+                    else if (path.StartsWith("/"))
+                    {
+                        path = "~" + path;
+                    }
+                    suggestion.ImageUrl = Url.Content(path);
+                }
+            }
+        }
+
         private static string? GetCuratedImageUrl(string? styleName)
         {
             var key = NormalizeStyleKey(styleName);
@@ -323,15 +358,20 @@ namespace SalonHair.Controllers
                 "high-fade-pompadour" => "https://cdn.shopify.com/s/files/1/0029/0868/4397/files/Fade-Pompadour.webp?v=1754905431",
                 "layer-layer" => "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=900&q=80",
                 "side-part-7-3" => "https://cellphones.com.vn/sforum/wp-content/uploads/2024/04/toc-side-part-7-3-30.jpeg",
+                "side-part-7-3" => "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=900&q=80",
                 "crew-cut" => "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=900&q=80",
                 "undercut-vuot-nguoc" => "https://images.unsplash.com/photo-1521119989659-a83eee488004?auto=format&fit=crop&w=900&q=80",
                 "ivy-league" => "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=900&q=80",
                 "buzz-cut" => "https://haircutinspiration.com/wp-content/uploads/Pitch-Perfect-Buzz-Cut.jpg",
                 "mullet-thoi-thuong" => "https://cdn11.dienmaycholon.vn/filewebdmclnew/public/userupload/files/Image%20FP_2024/layer-mullet-1.jpg",
+                "mullet-thoi-thuong" => "https://images.unsplash.com/photo-1519996529931-28324d5a630e?auto=format&fit=crop&w=900&q=80",
                 "uon-xoan-nhe" => "https://images.unsplash.com/photo-1519345182560-3f2917c472ef?auto=format&fit=crop&w=900&q=80",
                 "middle-part-bo-luong" => "https://xwatch.vn/upload_images/images/2023/03/10/toc-middle-part-5-5.gif",
                 "side-swept" => "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=900&q=80",
                 "toc-mai-fringe" => "https://liembarbershop.com/wp-content/uploads/2024/08/Long-Fringe-03.jpg",
+                "middle-part-bo-luong" => "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=900&q=80",
+                "side-swept" => "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=900&q=80",
+                "toc-mai-fringe" => "https://images.unsplash.com/photo-1519895609939-2795e7b7d25b?auto=format&fit=crop&w=900&q=80",
                 _ => null
             };
         }

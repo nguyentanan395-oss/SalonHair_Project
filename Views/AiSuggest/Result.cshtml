@@ -39,7 +39,7 @@
                     {
                         <div class="col-md-6">
                             <div class="suggestion-card h-100">
-                                <img src="@(string.IsNullOrWhiteSpace(item.ImageUrl) ? "https://placehold.co/640x480?text=Salon+Hair" : item.ImageUrl)"
+                                <img src="@(string.IsNullOrWhiteSpace(item.ImageUrl) ? "https://placehold.co/640x480?text=Salon+Hair" : Url.Content(item.ImageUrl))"
                                      class="suggestion-image"
                                      alt="@item.StyleName"
                                      onerror="this.onerror=null;this.src='https://placehold.co/640x480?text=Salon+Hair';" />

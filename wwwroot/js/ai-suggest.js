@@ -1,4 +1,4 @@
-﻿﻿import vision from "/vendor/mediapipe/vision_bundle.js";
+﻿﻿﻿import vision from "/vendor/mediapipe/vision_bundle.js";
 
 const { FaceLandmarker, FilesetResolver, DrawingUtils } = vision;
 
@@ -219,10 +219,9 @@ if (appRoot) {
     const profile = getSelectedProfile();
     if (!profile.ready) {
       setStatus(
-        "Vui lòng chọn giới tính và nhóm tuổi trước khi mở webcam để AI tối ưu gợi ý.",
-        "error",
+        "Webcam đã mở. Chọn giới tính và nhóm tuổi để AI gợi ý kiểu tóc chính xác hơn.",
+        "loading",
       );
-      return;
     }
 
     if (!navigator.mediaDevices?.getUserMedia) {
@@ -231,7 +230,7 @@ if (appRoot) {
     }
 
     stopBatchSession({ silent: true });
-    stopCamera();
+    cleanupCamera(); // Dọn dẹp trực tiếp trước khi khởi tạo stream mới
     clearImageState();
 
     try {
@@ -255,17 +254,16 @@ if (appRoot) {
       dom.video.classList.add("is-mirrored");
       dom.canvas.classList.add("is-mirrored");
       dom.emptyState.classList.add("d-none");
-      dom.uploadHint.textContent =
-        "Webcam đang chạy realtime. Hãy giữ khuôn mặt chính diện để AI nhận diện ổn định hơn.";
+      if (dom.uploadHint)
+        dom.uploadHint.textContent =
+          "Webcam đang chạy realtime. Hãy giữ khuôn mặt chính diện.";
+
       dom.startCameraButton.disabled = true;
       dom.stopCameraButton.disabled = false;
       dom.analyzeButton.disabled = true;
 
       await dom.video.play();
-      setStatus(
-        "Webcam đã mở. AI đang quét khuôn mặt theo thời gian thực...",
-        "ready",
-      );
+      setStatus("Webcam đã mở. AI đang quét khuôn mặt...", "ready");
 
       if (state.rafId) {
         cancelAnimationFrame(state.rafId);
@@ -287,6 +285,7 @@ if (appRoot) {
     cleanupCamera();
 
     if (!state.image) {
+      dom.video.classList.add("is-hidden");
       dom.emptyState.classList.remove("d-none");
       dom.uploadHint.textContent =
         "Bấm mở webcam để quét trực tiếp, hoặc tải ảnh chân dung một người nếu cần tư vấn thủ công.";
@@ -368,15 +367,6 @@ if (appRoot) {
       return;
     }
 
-    const profile = getSelectedProfile();
-    if (!profile.ready) {
-      setStatus(
-        "Vui lòng chọn giới tính và nhóm tuổi trước khi phân tích ảnh.",
-        "error",
-      );
-      return;
-    }
-
     cleanupCamera();
     await ensureMode("IMAGE");
     setStatus("AI đang phân tích ảnh khuôn mặt...", "loading");
@@ -385,7 +375,7 @@ if (appRoot) {
       const detection = state.faceLandmarker.detect(state.image);
       await handleDetectionResult(detection, "image");
     } catch (error) {
-      console.error(error);
+      console.error("Analysis Error:", error);
       setStatus(
         "Không thể phân tích ảnh này. Hãy thử ảnh sáng và rõ mặt hơn.",
         "error",
@@ -413,7 +403,7 @@ if (appRoot) {
           dom.video,
           nowInMs,
         );
-        handleDetectionResult(detection, "video");
+        await handleDetectionResult(detection, "video");
         state.lastVideoTime = dom.video.currentTime;
       } catch (error) {
         console.error(error);
@@ -498,8 +488,8 @@ if (appRoot) {
 
     if (!profile.ready) {
       setStatus(
-        "Vui lòng chọn giới tính và nhóm tuổi trước khi AI gợi ý kiểu tóc.",
-        "error",
+        "Chưa chọn giới tính/độ tuổi. AI vẫn nhận diện khuôn mặt nhưng chưa gợi ý kiểu tóc.",
+        "loading",
       );
       return;
     }
@@ -1007,9 +997,7 @@ if (appRoot) {
         drawImageToCanvas();
         updateAnalysisControls();
         dom.analyzeButton.disabled =
-          !enableAnalyzeButton ||
-          !state.faceLandmarker ||
-          !isProfileSelectionReady();
+          !enableAnalyzeButton || !state.faceLandmarker;
         resolve(image);
       };
 
@@ -1504,13 +1492,12 @@ if (appRoot) {
     const profileReady = isProfileSelectionReady();
 
     if (dom.analyzeButton) {
-      dom.analyzeButton.disabled =
-        !state.faceLandmarker || !state.image || !profileReady;
+      dom.analyzeButton.disabled = !state.faceLandmarker || !state.image;
     }
 
     if (dom.startCameraButton) {
       dom.startCameraButton.disabled =
-        !state.faceLandmarker || !profileReady || state.isCameraRunning;
+        !state.faceLandmarker || state.isCameraRunning;
     }
   }
 
@@ -1675,13 +1662,15 @@ if (appRoot) {
     for (const suggestion of payload.suggestions) {
       const card = document.createElement("article");
       card.className = "result-card";
+      const imageUrl =
+        normalizeImageUrl(suggestion.imageUrl) ||
+        "https://placehold.co/640x480?text=Salon+Hair";
       card.innerHTML = `
-                <img class="result-card__image" src="${escapeHtml(suggestion.imageUrl || "https://placehold.co/640x480?text=Salon+Hair")}" alt="${escapeHtml(suggestion.styleName)}" onerror="this.onerror=null;this.src='https://placehold.co/640x480?text=Salon+Hair';">
+                <img class="result-card__image" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(suggestion.styleName)}" onerror="this.onerror=null;this.src='https://placehold.co/640x480?text=Salon+Hair';">
                 <div class="result-card__body">
                     <span class="result-card__shape">Hợp với ${escapeHtml(payload.faceShape)}</span>
                     <h3>${escapeHtml(suggestion.styleName)}</h3>
                     <p>${escapeHtml(suggestion.description || "")}</p>
-                    <a class="btn btn-warning w-100 mt-3" href="${escapeHtml(appRoot.dataset.bookingUrl)}"><i class="bi bi-calendar-plus me-2"></i>Đặt lịch kiểu này</a>
                 </div>`;
       dom.cards.appendChild(card);
     }
@@ -1758,10 +1747,12 @@ if (appRoot) {
     return state.runtimeModel?.modelVersion || "rule-v1-local-feedback";
   }
 
-  function normalizeShapeLabelLegacy(value) {
+  function normalizeShapeLabel(value) {
     const normalized = String(value || "")
       .trim()
       .toLowerCase();
+
+    if (!normalized) return "Trái xoan";
 
     if (
       normalized.includes("tron") ||
@@ -1798,41 +1789,28 @@ if (appRoot) {
     return "Trái xoan";
   }
 
-  function normalizeShapeLabel(value) {
-    const normalized = String(value || "")
-      .trim()
-      .toLowerCase();
+  function normalizeImageUrl(imageUrl) {
+    if (!imageUrl) {
+      return null;
+    }
 
-    if (
-      normalized.includes("tron") ||
-      normalized.includes("tròn") ||
-      normalized.includes("round")
-    ) {
-      return "Tròn";
+    let normalized = String(imageUrl).trim();
+    if (!normalized) {
+      return null;
+    }
+
+    if (normalized.startsWith("~/")) {
+      normalized = normalized.replace(/^~\//, "/");
     }
 
     if (
-      normalized.includes("vuong") ||
-      normalized.includes("vuông") ||
-      normalized.includes("square")
+      !/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(normalized) &&
+      !normalized.startsWith("/")
     ) {
-      return "Vuông";
+      normalized = "/" + normalized;
     }
 
-    if (normalized.includes("xoan") || normalized.includes("oval")) {
-      return "Trái xoan";
-    }
-
-    if (
-      normalized.includes("dai") ||
-      normalized.includes("dài") ||
-      normalized.includes("long") ||
-      normalized.includes("oblong")
-    ) {
-      return "Dài";
-    }
-
-    return "Trái xoan";
+    return normalized;
   }
 
   function withTimeout(promise, timeoutMs, errorMessage) {
