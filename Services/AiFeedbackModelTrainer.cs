@@ -1,45 +1,107 @@
+
+using Microsoft.ML;
 using SalonHair.Models;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace SalonHair.Services
 {
     public class AiFeedbackModelTrainer
     {
         private readonly AiFeedbackLocalStore _feedbackStore;
+        private readonly FaceFeatureExtractor _extractor;
 
-        public AiFeedbackModelTrainer(AiFeedbackLocalStore feedbackStore)
+        public AiFeedbackModelTrainer(
+            AiFeedbackLocalStore feedbackStore,
+            FaceFeatureExtractor extractor)
         {
             _feedbackStore = feedbackStore;
+            _extractor = extractor;
         }
 
-        public async Task<AiFeedbackTrainResult> TrainAsync(CancellationToken cancellationToken)
+        public async Task<AiFeedbackTrainResult> TrainAsync(
+            CancellationToken cancellationToken)
         {
-            var stats = await _feedbackStore.GetStatsAsync(cancellationToken);
-            if (stats.TotalSamples == 0)
+            var samples = await _feedbackStore.GetAllAsync(cancellationToken);
+
+            if (!samples.Any())
             {
                 return new AiFeedbackTrainResult
                 {
                     ModelCreated = false,
-                    TotalSamples = 0,
-                    DistinctShapes = 0,
-                    ModelPath = string.Empty,
-                    ModelVersion = string.Empty,
-                    Message = "Chưa có mẫu feedback để train. Hãy lưu ít nhất một mẫu đúng hoặc sửa nhãn trước khi train."
+                    Message = "Không có dataset để train."
                 };
             }
 
-            var distinctShapes = await _feedbackStore.GetDistinctShapesCountAsync(cancellationToken);
+            var trainingData = new List<FaceTrainingData>();
+
+            foreach (var sample in samples)
+            {
+                if (string.IsNullOrWhiteSpace(sample.LandmarksJson))
+    continue;
+
+var landmarks =
+    System.Text.Json.JsonSerializer.Deserialize<
+        List<FaceLandmark>>(
+            sample.LandmarksJson);
+
+if (landmarks == null || !landmarks.Any())
+    continue;
+
+var feature = _extractor.Extract(
+    landmarks,
+    sample.CorrectedShape);
+
+                trainingData.Add(feature);
+            }
+
+            var ml = new MLContext();
+
+            IDataView dataView =
+                ml.Data.LoadFromEnumerable(trainingData);
+
+            var pipeline =
+                ml.Transforms.Conversion.MapValueToKey("Label")
+                .Append(
+                    ml.Transforms.Concatenate(
+                        "Features",
+                        nameof(FaceTrainingData.FaceWidth),
+                        nameof(FaceTrainingData.FaceHeight),
+                        nameof(FaceTrainingData.JawWidth),
+                        nameof(FaceTrainingData.ForeheadWidth)))
+                .Append(
+                    ml.MulticlassClassification.Trainers
+                    .SdcaMaximumEntropy())
+                .Append(
+                    ml.Transforms.Conversion
+                    .MapKeyToValue("PredictedLabel"));
+
+            var model = pipeline.Fit(dataView);
+
+            Directory.CreateDirectory("Models");
+
+            var modelPath = Path.Combine(
+                "Models",
+                "face-model.zip");
+
+            ml.Model.Save(model, dataView.Schema, modelPath);
 
             return new AiFeedbackTrainResult
             {
                 ModelCreated = true,
-                TotalSamples = stats.TotalSamples,
-                DistinctShapes = distinctShapes,
-                ModelPath = "local://feedback-model-v1",
-                ModelVersion = "feedback-model-v1",
-                Message = $"Train xong {stats.TotalSamples} mẫu với {distinctShapes} dáng mặt."
+                TotalSamples = trainingData.Count,
+                DistinctShapes =
+                    trainingData.Select(x => x.Label)
+                    .Distinct()
+                    .Count(),
+
+                ModelPath = modelPath,
+
+                ModelVersion =
+                    $"face-model-{DateTime.UtcNow:yyyyMMddHHmmss}",
+
+                Message =
+                    $"Train AI thành công với {trainingData.Count} mẫu."
             };
         }
     }
 }
+

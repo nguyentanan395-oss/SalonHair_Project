@@ -1,4 +1,4 @@
-﻿﻿﻿import vision from "/vendor/mediapipe/vision_bundle.js";
+import vision from "/vendor/mediapipe/vision_bundle.js";
 
 const { FaceLandmarker, FilesetResolver, DrawingUtils } = vision;
 
@@ -116,6 +116,13 @@ if (appRoot) {
     );
 
     try {
+      if (typeof faceapi !== 'undefined') {
+        await faceapi.nets.tinyFaceDetector.loadFromUri('/vendor/face-api/models');
+        await faceapi.nets.ageGenderNet.loadFromUri('/vendor/face-api/models');
+      }
+    } catch(e) { console.error("Error loading faceapi", e); }
+
+    try {
       const filesetResolver = await withTimeout(
         FilesetResolver.forVisionTasks(WASM_URL),
         MODEL_LOAD_TIMEOUT_MS,
@@ -131,6 +138,9 @@ if (appRoot) {
             },
             runningMode: "IMAGE",
             numFaces: 1,
+            minFaceDetectionConfidence: 0.5,
+            minFacePresenceConfidence: 0.5,
+            minTrackingConfidence: 0.65,
           }),
           MODEL_LOAD_TIMEOUT_MS,
           "Timeout while loading GPU face landmarker.",
@@ -144,6 +154,9 @@ if (appRoot) {
             },
             runningMode: "IMAGE",
             numFaces: 1,
+            minFaceDetectionConfidence: 0.5,
+            minFacePresenceConfidence: 0.5,
+            minTrackingConfidence: 0.65,
           }),
           MODEL_LOAD_TIMEOUT_MS,
           "Timeout while loading CPU face landmarker.",
@@ -476,6 +489,41 @@ if (appRoot) {
         "Phân tích ảnh xong. Đang ghép gợi ý kiểu tóc phù hợp...",
         "ready",
       );
+    }
+
+    if (typeof faceapi !== 'undefined') {
+        try {
+            const media = source === "video" ? dom.video : state.image;
+            const now = Date.now();
+            if (media && (!state.selectedGender || now - (state.lastFaceApiAt || 0) > 3000)) {
+                state.lastFaceApiAt = now;
+                const runFaceApi = async () => {
+                    const faceResult = await faceapi.detectSingleFace(media, new faceapi.TinyFaceDetectorOptions()).withAgeAndGender();
+                    if (faceResult) {
+                        const gender = faceResult.gender === 'male' ? 'Nam' : 'Nữ';
+                        let ageGroup = '';
+                        if (faceResult.age < 18) ageGroup = 'Dưới 18';
+                        else if (faceResult.age <= 30) ageGroup = '18-30';
+                        else if (faceResult.age <= 45) ageGroup = '31-45';
+                        else ageGroup = '46+';
+                        
+                        if (dom.genderSelect.value !== gender || dom.ageGroupSelect.value !== ageGroup) {
+                            dom.genderSelect.value = gender;
+                            dom.ageGroupSelect.value = ageGroup;
+                            state.selectedGender = gender;
+                            state.selectedAgeGroup = ageGroup;
+                            dom.genderSelect.dispatchEvent(new Event('change'));
+                            dom.profileHint.textContent = `AI tự động nhận diện: ${gender}, khoảng ${Math.round(faceResult.age)} tuổi.`;
+                        }
+                    }
+                };
+                if (source === "video") {
+                    runFaceApi();
+                } else {
+                    await runFaceApi();
+                }
+            }
+        } catch(e) { console.error("Face-api detection error:", e); }
     }
 
     return maybeSendAnalysis(analysis, metrics, source, analysisToken);

@@ -7,6 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<SalonContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddSingleton<AiFeedbackLocalStore>();
+builder.Services.AddSingleton<FaceFeatureExtractor>();
 builder.Services.AddSingleton<AiFeedbackModelTrainer>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddControllersWithViews();
