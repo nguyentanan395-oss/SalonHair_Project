@@ -50,8 +50,8 @@ namespace SalonHair.Controllers
                 return BadRequest(new { message = "Vui lòng chọn giới tính và độ tuổi trước khi phân tích khuôn mặt." });
             }
 
-            var model = await BuildSuggestionViewModelAsync(normalizedShape, request.Confidence, manualMode: false, normalizedGender, normalizedAgeGroup);
-            model.Summary = BuildSummary(normalizedShape, request, manualMode: false, normalizedGender, normalizedAgeGroup);
+            var model = await BuildSuggestionViewModelAsync(normalizedShape, request.Confidence, request.ManualMode, normalizedGender, normalizedAgeGroup);
+            model.Summary = BuildSummary(normalizedShape, request, request.ManualMode, normalizedGender, normalizedAgeGroup);
 
             return Json(model);
         }
@@ -189,30 +189,34 @@ namespace SalonHair.Controllers
         {
             try
             {
-                var suggestions = (await _context.Hairstyles
-                    .Where(h => h.FaceShape != null && h.Gender != null)
-                    .ToListAsync())
-                .Where(h =>
-                    NormalizeShape(h.FaceShape) == shape &&
-                    NormalizeGender(h.Gender) == gender &&
-                    NormalizeAgeGroup(h.AgeGroup).Contains(ageGroup))
-                .ToList();
+                // Lấy toàn bộ từ DB để normalize linh hoạt trong bộ nhớ (hoặc tối ưu bằng Queryable nếu DB lớn)
+                var allStyles = await _context.Hairstyles.ToListAsync();
+
+                var suggestions = allStyles.Where(h =>
+                    NormalizeShape(h.FaceShape) == shape && 
+                    (string.IsNullOrEmpty(gender) || NormalizeGender(h.Gender) == gender)
+                ).ToList();
+
+                // Lọc thêm theo nhóm tuổi nếu có dữ liệu
+                if (!string.IsNullOrEmpty(ageGroup))
+                {
+                    suggestions = suggestions.Where(h => 
+                        string.IsNullOrEmpty(h.AgeGroup) || 
+                        h.AgeGroup.Contains(ageGroup, StringComparison.OrdinalIgnoreCase) ||
+                        NormalizeAgeGroup(h.AgeGroup).Contains(ageGroup)
+                    ).ToList();
+                }
 
                 if (suggestions.Any())
                 {
-                    var profileFilteredSuggestions = ApplyProfileFilters(suggestions, gender, ageGroup);
-                    if (profileFilteredSuggestions.Any())
-                    {
-                        ApplyCuratedImages(profileFilteredSuggestions);
-                        return (profileFilteredSuggestions, false);
-                    }
+                    return (suggestions, false);
                 }
             }
             catch
             {
                 // Database is optional for this feature. Fallback data is returned below.
             }
-            return (new List<Hairstyle>(), false);
+            return (GetFallbackSuggestions(shape, gender), true);
         }
 
         private static List<Hairstyle> TailorSuggestions(List<Hairstyle> suggestions, string? gender, string? ageGroup)

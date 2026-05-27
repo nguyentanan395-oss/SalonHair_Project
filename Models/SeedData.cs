@@ -66,24 +66,24 @@ namespace SalonHair.Models
 
                     context.Hairstyles.AddRange(
                         // Mặt Tròn
-                        new Hairstyle { StyleName = "High Fade Pompadour", FaceShape = "Tròn", Description = "Tạo độ cao cho khuôn mặt, làm mặt trông dài và thon gọn hơn.", ImageUrl = "https://i.pinimg.com/564x/49/73/7a/49737a281804c86576b509f61b0c0342.jpg" },
-                        new Hairstyle { StyleName = "Layer Layer", FaceShape = "Tròn", Description = "Lớp tóc tỉa giúp che bớt độ rộng hai bên má.", ImageUrl = "https://i.pinimg.com/564x/87/42/85/8742857476579895655.jpg" },
-                        new Hairstyle { StyleName = "Side Part 7/3", FaceShape = "Tròn", Description = "Phong cách cổ điển, lịch lãm phù hợp mọi lứa tuổi.", ImageUrl = "https://i.pinimg.com/564x/23/e4/77/23e477651ad36a7a5601a35565551.jpg" },
+                        new Hairstyle { StyleName = "High Fade Pompadour", FaceShape = "Tròn", Gender = "Nam", AgeGroup = "18-30, 31-45", Description = "Tạo độ cao cho khuôn mặt, làm mặt trông dài và thon gọn hơn.", ImageUrl = "https://i.pinimg.com/564x/49/73/7a/49737a281804c86576b509f61b0c0342.jpg" },
+                        new Hairstyle { StyleName = "Layer Layer", FaceShape = "Tròn", Gender = "Nữ", AgeGroup = "Dưới 18, 18-30", Description = "Lớp tóc tỉa giúp che bớt độ rộng hai bên má.", ImageUrl = "https://i.pinimg.com/564x/87/42/85/8742857476579895655.jpg" },
+                        new Hairstyle { StyleName = "Side Part 7/3", FaceShape = "Tròn", Gender = "Nam", AgeGroup = "18-30, 31-45, 46+", Description = "Phong cách cổ điển, lịch lãm phù hợp mọi lứa tuổi.", ImageUrl = "https://i.pinimg.com/564x/23/e4/77/23e477651ad36a7a5601a35565551.jpg" },
 
                         // Mặt Vuông
-                        new Hairstyle { StyleName = "Crew Cut", FaceShape = "Vuông", Description = "Nam tính, gọn gàng và tôn lên đường nét xương hàm.", ImageUrl = "https://i.pinimg.com/564x/07/77/80/0777800c0f9942d93699c824f11b2685.jpg" },
-                        new Hairstyle { StyleName = "Undercut vuốt ngược", FaceShape = "Vuông", Description = "Kiểu tóc hot trend giúp tôn vẻ góc cạnh mạnh mẽ.", ImageUrl = "https://i.pinimg.com/564x/1a/2b/3c/1a2b3c4d5e6f7g8h9i0j.jpg" },
-                        new Hairstyle { StyleName = "Ivy League", FaceShape = "Vuông", Description = "Mẫu mực và sang trọng cho quý ông công sở.", ImageUrl = "https://i.pinimg.com/564x/a1/b1/c1/a1b1c1d1e1f1g1h1i1j1.jpg" },
+                        new Hairstyle { StyleName = "Crew Cut", FaceShape = "Vuông", Gender = "Nam", AgeGroup = "18-30, 31-45, 46+", Description = "Nam tính, gọn gàng và tôn lên đường nét xương hàm.", ImageUrl = "https://i.pinimg.com/564x/07/77/80/0777800c0f9942d93699c824f11b2685.jpg" },
+                        new Hairstyle { StyleName = "Undercut vuốt ngược", FaceShape = "Vuông", Gender = "Nam", AgeGroup = "Dưới 18, 18-30", Description = "Kiểu tóc hot trend giúp tôn vẻ góc cạnh mạnh mẽ.", ImageUrl = "https://i.pinimg.com/564x/1a/2b/3c/1a2b3c4d5e6f7g8h9i0j.jpg" },
+                        new Hairstyle { StyleName = "Ivy League", FaceShape = "Vuông", Gender = "Nam", AgeGroup = "18-30, 31-45", Description = "Mẫu mực và sang trọng cho quý ông công sở.", ImageUrl = "https://i.pinimg.com/564x/a1/b1/c1/a1b1c1d1e1f1g1h1i1j1.jpg" },
 
                         // Mặt Trái Xoan
-                        new Hairstyle { StyleName = "Buzz Cut", FaceShape = "Trái Xoan", Description = "Khoe trọn vẹn gương mặt cân đối hoàn hảo.", ImageUrl = "https://i.pinimg.com/564x/01/02/03/01020304050607080910.jpg" },
-                        new Hairstyle { StyleName = "Mullet thời thượng", FaceShape = "Trái Xoan", Description = "Kiểu tóc cá tính và đầy phá cách.", ImageUrl = "https://i.pinimg.com/564x/11/12/13/11121314151617181920.jpg" },
-                        new Hairstyle { StyleName = "Uốn xoăn nhẹ", FaceShape = "Trái Xoan", Description = "Tạo vẻ lãng tử và trẻ trung.", ImageUrl = "https://i.pinimg.com/564x/21/22/23/21222324252627282930.jpg" },
+                        new Hairstyle { StyleName = "Buzz Cut", FaceShape = "Trái xoan", Gender = "Nam", AgeGroup = "Dưới 18, 18-30", Description = "Khoe trọn vẹn gương mặt cân đối hoàn hảo.", ImageUrl = "https://i.pinimg.com/564x/01/02/03/01020304050607080910.jpg" },
+                        new Hairstyle { StyleName = "Mullet thời thượng", FaceShape = "Trái xoan", Gender = "Nam", AgeGroup = "Dưới 18, 18-30", Description = "Kiểu tóc cá tính và đầy phá cách.", ImageUrl = "https://i.pinimg.com/564x/11/12/13/11121314151617181920.jpg" },
+                        new Hairstyle { StyleName = "Uốn xoăn nhẹ", FaceShape = "Trái xoan", Gender = "Nữ", AgeGroup = "18-30, 31-45", Description = "Tạo vẻ lãng tử và trẻ trung.", ImageUrl = "https://i.pinimg.com/564x/21/22/23/21222324252627282930.jpg" },
 
                         // Mặt Dài
-                        new Hairstyle { StyleName = "Middle Part (Bổ luống)", FaceShape = "Dài", Description = "Cân bằng độ dài khuôn mặt, tạo sự hài hòa.", ImageUrl = "https://i.pinimg.com/564x/31/32/33/31323334353637383940.jpg" },
-                        new Hairstyle { StyleName = "Side Swept", FaceShape = "Dài", Description = "Tóc vuốt lệch một bên giúp mặt bớt cảm giác quá dài.", ImageUrl = "https://i.pinimg.com/564x/41/42/43/41424344454647484950.jpg" },
-                        new Hairstyle { StyleName = "Tóc Mái (Fringe)", FaceShape = "Dài", Description = "Che bớt phần trán giúp khuôn mặt cân đối hơn.", ImageUrl = "https://i.pinimg.com/564x/51/52/53/51525354555657585960.jpg" }
+                        new Hairstyle { StyleName = "Middle Part (Bổ luống)", FaceShape = "Dài", Gender = "Nam", AgeGroup = "Dưới 18, 18-30", Description = "Cân bằng độ dài khuôn mặt, tạo sự hài hòa.", ImageUrl = "https://i.pinimg.com/564x/31/32/33/31323334353637383940.jpg" },
+                        new Hairstyle { StyleName = "Side Swept", FaceShape = "Dài", Gender = "Nam", AgeGroup = "18-30, 31-45", Description = "Tóc vuốt lệch một bên giúp mặt bớt cảm giác quá dài.", ImageUrl = "https://i.pinimg.com/564x/41/42/43/41424344454647484950.jpg" },
+                        new Hairstyle { StyleName = "Tóc Mái (Fringe)", FaceShape = "Dài", Gender = "Nam", AgeGroup = "Dưới 18, 18-30, 31-45", Description = "Che bớt phần trán giúp khuôn mặt cân đối hơn.", ImageUrl = "https://i.pinimg.com/564x/51/52/53/51525354555657585960.jpg" }
                     );
                 }
 

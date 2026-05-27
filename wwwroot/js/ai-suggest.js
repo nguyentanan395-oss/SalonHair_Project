@@ -78,6 +78,7 @@ if (appRoot) {
     clientSessionId: getClientSessionId(),
     analysisSequence: 0,
     activeAnalysisToken: 0,
+    lastCorrectedShape: "",
     batch: {
       active: false,
       files: [],
@@ -601,6 +602,17 @@ if (appRoot) {
         "success",
       );
 
+      if (state.lastAnalysis) {
+        state.lastAnalysis.shape = correctedShape;
+        state.lastCorrectedShape = correctedShape;
+        dom.metricShape.textContent = correctedShape;
+      }
+
+      const profile = getSelectedProfile();
+      if (profile.ready && state.lastAnalysis) {
+        await refreshSuggestionsForShape(correctedShape, true);
+      }
+
       if (state.batch.active) {
         state.batch.labeledCount += 1;
         state.batch.index += 1;
@@ -736,6 +748,27 @@ if (appRoot) {
           "success",
         );
         setFeedbackStatus("AI đã nạp model mới từ dataset local.", "success");
+
+        const profile = getSelectedProfile();
+        const manualShape =
+          state.lastCorrectedShape || state.lastAnalysis?.shape;
+
+        if (manualShape && profile.ready) {
+          setStatus(
+            `Đang cập nhật gợi ý cho khuôn mặt ${manualShape}...`,
+            "loading",
+          );
+          await refreshSuggestionsForShape(manualShape, true);
+          setStatus(
+            `AI đã chuyển sang gợi ý theo khuôn mặt ${manualShape}.`,
+            "success",
+          );
+        } else if (!profile.ready) {
+          setDatasetStatus(
+            "Vui lòng chọn giới tính và độ tuổi để nhận gợi ý sau khi train.",
+            "warning",
+          );
+        }
       } else {
         setDatasetStatus(payload.message, "error");
       }
@@ -747,6 +780,57 @@ if (appRoot) {
       );
     } finally {
       dom.trainModelButton.disabled = false;
+    }
+  }
+
+  async function refreshSuggestionsForShape(shape, manualMode = false) {
+    if (!shape) {
+      return;
+    }
+
+    const profile = getSelectedProfile();
+    if (!profile.ready) {
+      setDatasetStatus(
+        "Chọn giới tính và nhóm tuổi để AI gợi ý chính xác hơn.",
+        "warning",
+      );
+      return;
+    }
+
+    try {
+      const response = await fetch(appRoot.dataset.analyzeUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          detectedShape: shape,
+          gender: profile.gender,
+          ageGroup: profile.ageGroup,
+          manualMode,
+          confidence: state.lastAnalysis?.confidence ?? 0.72,
+          faceLengthRatio: state.lastMetrics?.lengthToCheekRatio ?? 0,
+          foreheadWidthRatio: state.lastMetrics?.foreheadToCheekRatio ?? 0,
+          jawWidthRatio: state.lastMetrics?.jawToCheekRatio ?? 0,
+          foreheadJawDelta: state.lastMetrics?.foreheadJawDelta ?? 0,
+        }),
+      });
+
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload.message || "Không lấy được gợi ý từ server.");
+      }
+
+      renderSuggestions(payload);
+      dom.metricShape.textContent = shape;
+      state.lastSentShape = shape;
+      state.lastSentAt = Date.now();
+    } catch (error) {
+      console.error(error);
+      setDatasetStatus(
+        "Không thể làm mới gợi ý sau khi train. Hãy thử lại.",
+        "error",
+      );
     }
   }
 
@@ -1292,6 +1376,7 @@ if (appRoot) {
   function clearFeedbackState() {
     state.lastAnalysis = null;
     state.lastMetrics = null;
+    state.lastCorrectedShape = "";
     state.lastDetectionSource = "";
     state.lastLandmarksJson = "";
     state.queuedAnalysisRequest = null;

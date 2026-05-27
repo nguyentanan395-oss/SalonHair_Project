@@ -8,6 +8,8 @@ namespace SalonHair.Models
 
         public string? AgeGroup { get; set; }
 
+        public bool ManualMode { get; set; }
+
         public double Confidence { get; set; }
 
         public double FaceLengthRatio { get; set; }
