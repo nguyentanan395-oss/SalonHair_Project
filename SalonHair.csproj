@@ -34,6 +34,8 @@
         buildtransitive
       </IncludeAssets>
     </PackageReference>
+
+    <PackageReference Include="VNPAY.NET" Version="2.1.0" />
   </ItemGroup>
 
 </Project>

@@ -31,6 +31,8 @@ namespace SalonHair.Models
         public DbSet<Review> Reviews { get; set; }
 
         public DbSet<Role> Roles { get; set; }
+        
+        public DbSet<Payment> Payments { get; set; }
 
         // ===== Relation =====
 
