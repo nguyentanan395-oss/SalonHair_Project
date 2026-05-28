@@ -37,5 +37,7 @@ namespace SalonHair.Models
         // ===== Có thể thêm sau =====
         // public string Status { get; set; } = "Pending";
         // public string Notes { get; set; } = string.Empty;
+
+        public virtual Payment? Payment { get; set; }
     }
 }

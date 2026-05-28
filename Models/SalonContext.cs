@@ -134,6 +134,10 @@ namespace SalonHair.Models
                 .WithMany(h => h.Reviews)
                 .HasForeignKey(r => r.HairstyleId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Payment>()
+                .Property(p => p.Amount)
+                .HasPrecision(18, 2);
         }
     }
 }
