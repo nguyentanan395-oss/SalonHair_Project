@@ -38,6 +38,7 @@ namespace SalonHair.Models
 
         // ===== Verify =====
         public bool IsEmailVerified { get; set; } = false;
+        public bool IsLocked { get; set; } = false;
 
         // ===== Navigation =====
 

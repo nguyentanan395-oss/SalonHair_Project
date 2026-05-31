@@ -365,6 +365,9 @@ namespace SalonHair.Migrations
                     b.Property<bool>("IsEmailVerified")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsLocked")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Language")
                         .HasColumnType("nvarchar(max)");
 

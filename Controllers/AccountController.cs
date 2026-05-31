@@ -36,6 +36,13 @@ namespace SalonHair.Controllers
 
             if (existingUser != null)
             {
+                // Kiểm tra tài khoản có bị khóa không
+                if (existingUser.IsLocked)
+                {
+                    ModelState.AddModelError("", "Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.");
+                    return View(user);
+                }
+                
                 bool isPasswordValid = false;
                 try
                 {
