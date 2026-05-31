@@ -6,9 +6,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SalonHair.Models;
+using Microsoft.AspNetCore.Authorization;
+
 
 namespace SalonHair.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class CustomersController : Controller
     {
         private readonly SalonContext _context;
@@ -19,11 +22,23 @@ namespace SalonHair.Controllers
         }
 
         // GET: Customers
-        public async Task<IActionResult> Index()
+       public async Task<IActionResult> Index(string search)
         {
-            return View(await _context.Customers.ToListAsync());
-        }
+            var customers = _context.Customers
+                .Include(c => c.User)
+                .AsQueryable();
 
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                customers = customers.Where(c =>
+                    c.Name.Contains(search) ||
+                    c.Email.Contains(search) ||
+                    c.Phone.Contains(search));
+            }
+
+            ViewBag.Search = search;
+            return View(await customers.ToListAsync());
+        }
         // GET: Customers/Details/5
         public async Task<IActionResult> Details(int? id)
         {
@@ -33,7 +48,13 @@ namespace SalonHair.Controllers
             }
 
             var customer = await _context.Customers
-                .FirstOrDefaultAsync(m => m.Id == id);
+            .Include(c => c.User)
+            .Include(c => c.Bookings)
+                .ThenInclude(b => b.Service)
+            .Include(c => c.Orders)
+                .ThenInclude(o => o.OrderDetails)
+                .ThenInclude(od => od.Product)
+            .FirstOrDefaultAsync(m => m.Id == id);
             if (customer == null)
             {
                 return NotFound();
@@ -83,6 +104,38 @@ namespace SalonHair.Controllers
         // POST: Customers/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> LockUnlock(int id)
+        {
+            var customer = await _context.Customers
+                .Include(c => c.User)
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (customer == null || customer.User == null)
+            {
+                TempData["Error"] = "Không thể thực hiện thao tác này.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            customer.User.IsLocked = !customer.User.IsLocked;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                TempData["Success"] = customer.User.IsLocked
+                    ? "Đã khóa tài khoản khách hàng."
+                    : "Đã mở khóa tài khoản khách hàng.";
+            }
+            catch
+            {
+                TempData["Error"] = "Có lỗi xảy ra, vui lòng thử lại sau.";
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Phone,Email")] Customer customer)
@@ -92,27 +145,44 @@ namespace SalonHair.Controllers
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
+            if (string.IsNullOrWhiteSpace(customer.Name) ||
+                string.IsNullOrWhiteSpace(customer.Phone) ||
+                string.IsNullOrWhiteSpace(customer.Email))
             {
-                try
-                {
-                    _context.Update(customer);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!CustomerExists(customer.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
+                ModelState.AddModelError("", "Không được để trống thông tin.");
             }
-            return View(customer);
+
+            if (!customer.Email.Contains("@"))
+            {
+                ModelState.AddModelError("", "Email không đúng định dạng.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View(customer);
+            }
+
+            var existingCustomer = await _context.Customers
+                .Include(c => c.User)
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (existingCustomer == null)
+            {
+                return NotFound();
+            }
+
+            existingCustomer.Name = customer.Name;
+            existingCustomer.Phone = customer.Phone;
+            existingCustomer.Email = customer.Email;
+
+            if (existingCustomer.User != null)
+            {
+                existingCustomer.User.Email = customer.Email;
+            }
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Customers/Delete/5

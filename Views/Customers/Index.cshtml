@@ -1,47 +1,230 @@
 ﻿@model IEnumerable<SalonHair.Models.Customer>
 
 @{
-    ViewData["Title"] = "Index";
+ViewData["Title"] = "Quản lý khách hàng";
 }
 
-<h1>Index</h1>
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-warning fw-bold mb-0 text-uppercase">
+            <i class="bi bi-person-lines-fill me-2"></i> Quản lý khách hàng
+        </h2>
+    </div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Phone)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Email)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Phone)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Email)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
+    <!-- Search Box -->
+    <div class="card bg-dark border-warning mb-4 shadow">
+        <div class="card-body">
+            <form asp-action="Index" method="get" class="row g-3">
+                <div class="col-md-10">
+                    <div class="input-group">
+                        <span class="input-group-text bg-black border-secondary text-secondary"><i class="bi bi-search"></i></span>
+                        <input type="text" name="search" value="@ViewBag.Search" class="form-control bg-black border-secondary text-white" placeholder="Tìm kiếm theo tên, email hoặc số điện thoại...">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-warning w-100 fw-bold">TÌM KIẾM</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-dark border-warning text-warning text-center">
+            <i class="bi bi-exclamation-circle me-2"></i> Không tìm thấy dữ liệu khách hàng phù hợp.
+        </div>
+    }
+    else
+    {
+        <!-- Table -->
+        <div class="card bg-dark border-warning shadow">
+            <div class="table-responsive">
+                <table class="table table-dark table-hover align-middle mb-0">
+                    <thead>
+                        <tr class="text-warning">
+                            <th class="ps-4">Mã KH</th>
+                            <th>Họ tên</th>
+                            <th>Số điện thoại</th>
+                            <th>Email</th>
+                            <th>Tài khoản</th>
+                            <th class="text-center">Trạng thái</th>
+                            <th class="text-end pe-4">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="ps-4 text-secondary">#@item.Id</td>
+                                <td class="fw-bold">@item.Name</td>
+                                <td>@item.Phone</td>
+                                <td>@item.Email</td>
+                                <td>@(item.User?.Username ?? "N/A")</td>
+                                <td class="text-center">
+                                    @if (item.User != null && item.User.IsLocked)
+                                    {
+                                        <span class="badge bg-danger"><i class="bi bi-lock-fill me-1"></i>Đã khóa</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success"><i class="bi bi-check-circle-fill me-1"></i>Hoạt động</span>
+                                    }
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#detailsModal-@item.Id" title="Chi tiết">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-warning mx-1" data-bs-toggle="modal" data-bs-target="#editModal-@item.Id" title="Sửa">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal-@item.Id" title="Xóa">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                        @if (item.User != null)
+                                        {
+                                            <button class="btn btn-sm @(item.User.IsLocked ? "btn-outline-success" : "btn-outline-secondary") ms-1" data-bs-toggle="modal" data-bs-target="#lockModal-@item.Id" title="@(item.User.IsLocked ? "Mở khóa" : "Khóa")">
+                                                <i class="bi @(item.User.IsLocked ? "bi-unlock" : "bi-lock")"></i>
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Modals -->
+@foreach (var item in Model)
+{
+    <!-- Details Modal (Chi tiết) -->
+    <div class="modal fade" id="detailsModal-@item.Id" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark text-white border-info shadow-lg">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title text-info"><i class="bi bi-info-circle me-2"></i>Chi tiết khách hàng</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body py-4">
+                    <div class="row g-3">
+                        <div class="col-4 text-secondary text-uppercase small fw-bold">Họ và tên:</div>
+                        <div class="col-8 fw-bold">@item.Name</div>
+                        <div class="col-4 text-secondary text-uppercase small fw-bold">Số điện thoại:</div>
+                        <div class="col-8">@item.Phone</div>
+                        <div class="col-4 text-secondary text-uppercase small fw-bold">Email:</div>
+                        <div class="col-8">@item.Email</div>
+                        <div class="col-4 text-secondary text-uppercase small fw-bold">Tài khoản:</div>
+                        <div class="col-8">@(item.User?.Username ?? "Chưa có tài khoản")</div>
+                        <div class="col-4 text-secondary text-uppercase small fw-bold">Trạng thái:</div>
+                        <div class="col-8">
+                            <span class="badge @(item.User?.IsLocked == true ? "bg-danger" : "bg-success")">
+                                @(item.User?.IsLocked == true ? "Đã khóa" : "Hoạt động")
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal (Sửa) -->
+    <div class="modal fade" id="editModal-@item.Id" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark text-white border-warning">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title text-warning"><i class="bi bi-pencil-square me-2"></i>Sửa thông tin khách hàng</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form asp-action="Edit" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="Id" value="@item.Id" />
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label text-secondary small fw-bold text-uppercase">Họ và tên</label>
+                            <input type="text" name="Name" value="@item.Name" class="form-control bg-black border-secondary text-white" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-secondary small fw-bold text-uppercase">Số điện thoại</label>
+                            <input type="text" name="Phone" value="@item.Phone" class="form-control bg-black border-secondary text-white" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-secondary small fw-bold text-uppercase">Email</label>
+                            <input type="email" name="Email" value="@item.Email" class="form-control bg-black border-secondary text-white" required />
+                        </div>
+                    </div>
+                    <div class="modal-footer border-secondary">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-warning fw-bold">LƯU THAY ĐỔI</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Modal (Xác nhận xóa) -->
+    <div class="modal fade" id="deleteModal-@item.Id" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark text-white border-danger shadow-lg">
+                <div class="modal-header border-danger">
+                    <h5 class="modal-title text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Xác nhận xóa</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center py-4">
+                    <p>Bạn có chắc chắn muốn xóa vĩnh viễn khách hàng này?</p>
+                    <h4 class="text-warning">@item.Name</h4>
+                    <p class="text-secondary small">Thao tác này sẽ xóa mọi dữ liệu liên quan.</p>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <form asp-action="Delete" asp-route-id="@item.Id" method="post">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-danger fw-bold px-4">XÓA NGAY</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lock/Unlock Modal (Xác nhận khóa) -->
+    @if (item.User != null)
+    {
+        <div class="modal fade" id="lockModal-@item.Id" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content bg-dark text-white border-secondary">
+                    <div class="modal-header border-secondary">
+                        <h5 class="modal-title">
+                            <i class="bi @(item.User.IsLocked ? "bi-unlock-fill" : "bi-lock-fill") me-2"></i>
+                            @(item.User.IsLocked ? "Mở khóa truy cập" : "Khóa truy cập")
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body py-4">
+                        Bạn có chắc chắn muốn @(item.User.IsLocked ? "mở lại quyền" : "tạm dừng quyền") truy cập hệ thống của <strong>@item.Name</strong>?
+                    </div>
+                    <div class="modal-footer border-secondary">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <form asp-action="LockUnlock" asp-route-id="@item.Id" method="post">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn @(item.User.IsLocked ? "btn-success" : "btn-warning") fw-bold text-dark">XÁC NHẬN</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
 }
-    </tbody>
-</table>
+
+<style>
+    .table-hover tbody tr:hover { background-color: rgba(212, 175, 55, 0.08) !important; transition: background-color 0.3s ease; }
+    .form-control:focus, .form-select:focus { background-color: #000 !important; border-color: #d4af37 !important; color: #fff; box-shadow: 0 0 0 0.25rem rgba(212, 175, 55, 0.25); }
+    .modal-content { border-width: 1px; }
+    .btn-group .btn { border-radius: 6px; }
+</style>
