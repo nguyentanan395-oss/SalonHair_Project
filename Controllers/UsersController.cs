@@ -1,64 +1,3 @@
-// using Microsoft.AspNetCore.Authorization;
-// using Microsoft.AspNetCore.Mvc;
-// using Microsoft.EntityFrameworkCore;
-// using SalonHair.Models;
-// using SalonHair.Models;
-// using System.Collections.Generic;
-// using System.Linq;
-// using System.Threading.Tasks;
-
-// namespace SalonHair.Controllers
-// {
-//     // Only admins can access this controller
-//     [Authorize(Roles = "Admin")]
-//     public class UsersController : Controller
-//     {
-//         private readonly SalonContext _context;
-
-//         public UsersController(SalonContext context)
-//         {
-//             _context = context;
-//         }
-
-//         // GET: /Users
-//         public async Task<IActionResult> Index()
-//         {
-//             // Load all users with their role
-//             var users = await _context.Users.Include(u => u.Role).ToListAsync();
-//             return View(users);
-//         }
-
-//         // GET: /Users/Edit/5
-//         public async Task<IActionResult> Edit(int id)
-//         {
-//             var user = await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == id);
-//             if (user == null)
-//             {
-//                 return NotFound();
-//             }
-//             // Pass the list of roles for dropdown
-//             ViewBag.Roles = await _context.Roles.ToListAsync();
-//             return View(user);
-//         }
-
-//         // POST: /Users/Edit/5
-//         [HttpPost]
-//         [ValidateAntiForgeryToken]
-//         public async Task<IActionResult> Edit(int id, int roleId)
-//         {
-//             var user = await _context.Users.FindAsync(id);
-//             if (user == null)
-//             {
-//                 return NotFound();
-//             }
-//             // Update role
-//             user.RoleId = roleId;
-//             _context.Update(user);
-//             await _context.SaveChangesAsync();
-//             return RedirectToAction(nameof(Index));
-//         }
-//     }
-// }
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -90,6 +29,8 @@ namespace SalonHair.Controllers
             }
 
             ViewBag.Search = search;
+            ViewBag.Roles = await _context.Roles.ToListAsync();
+
             return View(await users.ToListAsync());
         }
 
@@ -129,13 +70,39 @@ namespace SalonHair.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetUser(int id)
+        {
+            var user = await _context.Users
+                .Where(u => u.Id == id)
+                .Select(u => new
+                {
+                    id = u.Id,
+                    username = u.Username,
+                    email = u.Email,
+                    roleId = u.RoleId,
+                    language = u.Language
+                })
+                .FirstOrDefaultAsync();
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            return Json(user);
+        }
+
         public async Task<IActionResult> Edit(int id)
         {
             var user = await _context.Users
                 .Include(u => u.Role)
                 .FirstOrDefaultAsync(u => u.Id == id);
 
-            if (user == null) return NotFound();
+            if (user == null)
+            {
+                return NotFound();
+            }
 
             ViewBag.Roles = await _context.Roles.ToListAsync();
             return View(user);
@@ -147,13 +114,22 @@ namespace SalonHair.Controllers
         {
             var user = await _context.Users.FindAsync(id);
 
-            if (user == null) return NotFound();
+            if (user == null)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Không tìm thấy tài khoản."
+                });
+            }
 
             if (await _context.Users.AnyAsync(u => u.Email == model.Email && u.Id != id))
             {
-                ModelState.AddModelError("", "Email đã tồn tại trong hệ thống.");
-                ViewBag.Roles = await _context.Roles.ToListAsync();
-                return View(model);
+                return Json(new
+                {
+                    success = false,
+                    message = "Email đã tồn tại trong hệ thống."
+                });
             }
 
             user.Username = model.Username;
@@ -163,7 +139,11 @@ namespace SalonHair.Controllers
 
             await _context.SaveChangesAsync();
 
-            return RedirectToAction(nameof(Index));
+            return Json(new
+            {
+                success = true,
+                message = "Cập nhật tài khoản thành công."
+            });
         }
 
         [HttpPost]
@@ -172,7 +152,10 @@ namespace SalonHair.Controllers
         {
             var user = await _context.Users.FindAsync(id);
 
-            if (user == null) return NotFound();
+            if (user == null)
+            {
+                return NotFound();
+            }
 
             user.IsLocked = !user.IsLocked;
 
@@ -185,13 +168,25 @@ namespace SalonHair.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
-            var user = await _context.Users.FindAsync(id);
+            var user = await _context.Users
+                .Include(u => u.Customer)
+                .FirstOrDefaultAsync(u => u.Id == id);
 
-            if (user == null) return NotFound();
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            if (user.Customer != null)
+            {
+                TempData["ErrorMessage"] = "Không thể xóa tài khoản vì tài khoản này đang được liên kết với khách hàng.";
+                return RedirectToAction(nameof(Index));
+            }
 
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
 
+            TempData["SuccessMessage"] = "Xóa tài khoản thành công.";
             return RedirectToAction(nameof(Index));
         }
     }

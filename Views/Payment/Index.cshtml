@@ -1,0 +1,139 @@
+@model IEnumerable<SalonHair.Models.Payment>
+@{
+    ViewData["Title"] = "Quản lý thanh toán";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-warning fw-bold mb-0 text-uppercase">
+            <i class="bi bi-cash-stack me-2"></i> Quản lý giao dịch thanh toán
+        </h2>
+    </div>
+
+    <div class="card bg-dark border-gold-card shadow">
+        <div class="table-responsive">
+            <table class="table table-dark table-hover mb-0 align-middle">
+                <thead>
+                    <tr class="text-warning border-secondary">
+                        <th class="ps-4">Mã GD</th>
+                        <th>Loại GD</th>
+                        <th>Tham chiếu</th>
+                        <th>Số tiền</th>
+                        <th>Phương thức</th>
+                        <th>Ngày tạo</th>
+                        <th class="text-center">Trạng thái</th>
+                        <th class="text-end pe-4">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="ps-4 text-secondary small">#@item.PaymentId</td>
+                            <td>
+                                @if (item.BookingId != null)
+                                {
+                                    <span class="badge border border-info text-info"><i class="bi bi-calendar-event me-1"></i>Đặt lịch</span>
+                                }
+                                else if (item.OrderId != null)
+                                {
+                                    <span class="badge border border-primary text-primary"><i class="bi bi-bag-check me-1"></i>Đơn hàng</span>
+                                }
+                            </td>
+                            <td class="fw-bold text-white-50">
+                                @(item.BookingId != null ? $"BK-{item.BookingId}" : $"ORD-{item.OrderId}")
+                            </td>
+                            <td class="text-warning fw-bold">@item.Amount.ToString("N0")đ</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <i class="bi @(item.Method == "Cash" ? "bi-cash-coin text-success" : "bi-credit-card-2-front text-info") me-2 fs-5"></i>
+                                    <span class="small text-white">@item.Method</span>
+                                </div>
+                            </td>
+                            <td class="text-secondary small">@item.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td class="text-center">
+                                @if (item.Status == "Đã thanh toán")
+                                {
+                                    <span class="badge bg-success-subtle text-success border border-success px-3">
+                                        <i class="bi bi-check-circle-fill me-1"></i>Hoàn tất
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning-subtle text-warning border border-warning px-3">
+                                        <i class="bi bi-clock-history me-1"></i>@item.Status
+                                    </span>
+                                }
+                            </td>
+                            <td class="text-end pe-4">
+                                <div class="btn-group">
+                                    @if (!string.IsNullOrEmpty(item.ProofImage))
+                                    {
+                                        <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#proofModal-@item.PaymentId" title="Xem ảnh minh chứng">
+                                            <i class="bi bi-image"></i>
+                                        </button>
+                                    }
+
+                                    @if (item.Status != "Đã thanh toán")
+                                    {
+                                        <button type="button" class="btn btn-sm btn-warning ms-1" data-bs-toggle="modal" data-bs-target="#confirmModal-@item.PaymentId" title="Xác nhận thanh toán">
+                                            <i class="bi bi-check-lg text-dark"></i>
+                                        </button>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+
+                        @if (!string.IsNullOrEmpty(item.ProofImage))
+                        {
+                            <div class="modal fade" id="proofModal-@item.PaymentId" tabindex="-1">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content bg-dark border-info">
+                                        <div class="modal-header border-secondary">
+                                            <h5 class="modal-title text-info"><i class="bi bi-image me-2"></i>Minh chứng thanh toán</h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body text-center p-2 bg-black">
+                                            <img src="@item.ProofImage" class="img-fluid rounded shadow" alt="Proof of Payment" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                        <div class="modal fade" id="confirmModal-@item.PaymentId" tabindex="-1">
+                            <div class="modal-dialog modal-dialog-centered modal-sm">
+                                <div class="modal-content bg-dark text-white border-warning shadow-lg">
+                                    <div class="modal-header border-secondary">
+                                        <h6 class="modal-title text-warning">Xác nhận giao dịch</h6>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body text-center py-4">
+                                        <p class="mb-1 text-secondary small">Xác nhận đã nhận đủ số tiền:</p>
+                                        <h4 class="text-warning mb-3">@item.Amount.ToString("N0")đ</h4>
+                                        <p class="small mb-0 opacity-75">Cập nhật trạng thái thanh toán thành <strong>Hoàn tất</strong>.</p>
+                                    </div>
+                                    <div class="modal-footer border-secondary justify-content-center">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary px-3" data-bs-dismiss="modal">Hủy</button>
+                                        <form asp-action="Confirm" asp-route-id="@item.PaymentId" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm btn-warning fw-bold px-4 text-dark">XÁC NHẬN</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    .border-gold-card { border: 1px solid rgba(212, 175, 55, 0.15) !important; border-radius: 12px; }
+    .table-dark { background-color: transparent !important; }
+    .table-hover tbody tr:hover { background-color: rgba(212, 175, 55, 0.04) !important; transition: background 0.2s ease-in-out; }
+    .badge { font-weight: 600; font-size: 0.7rem; letter-spacing: 0.5px; }
+    .modal-content { border-radius: 12px; }
+</style>

@@ -184,13 +184,18 @@ namespace SalonHair.Controllers
                 .FirstOrDefaultAsync(u => u.Username == User.Identity.Name);
 
             if (user == null) return NotFound();
+
+            // Lấy thông tin khách hàng tương ứng để hiển thị Họ tên
+            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == user.Id);
+            ViewBag.FullName = customer?.Name;
+
             return View(user);
         }
 
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateProfile(string email, string language)
+        public async Task<IActionResult> UpdateProfile(string fullName, string email, string language)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == User.Identity.Name);
             if (user == null) return NotFound();
@@ -203,6 +208,14 @@ namespace SalonHair.Controllers
 
             user.Email = email;
             user.Language = language;
+
+            // Đồng bộ Họ và tên sang bảng Customers
+            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == user.Id);
+            if (customer != null)
+            {
+                customer.Name = fullName;
+                _context.Update(customer);
+            }
             
             await _context.SaveChangesAsync();
             TempData["SuccessMessage"] = "Cập nhật thông tin thành công!";

@@ -3,43 +3,65 @@
     ViewData["Title"] = "Đăng Ký";
 }
 
-<div class="row mt-5">
-    <div class="col-md-6 offset-md-3">
-        <div class="card bg-dark border-gold-card shadow-lg text-light">
-            <div class="card-header border-bottom border-warning py-3 text-center">
-                <h3 class="text-warning fw-bold mb-0"><i class="bi bi-person-plus"></i> ĐĂNG KÝ TÀI KHOẢN</h3>
+<div class="login-page">
+    <div class="login-box">
+
+        <div class="login-panel-left">
+            <div class="logo-circle">
+                <i class="bi bi-person-plus"></i>
             </div>
-            <div class="card-body p-4">
-                <form asp-action="Register" method="post">
-                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-                    <div class="mb-3">
-                        <label asp-for="Username" class="form-label text-warning fw-bold"></label>
-                        <input asp-for="Username" class="form-control bg-secondary text-light border-0" placeholder="Chọn tên đăng nhập..." />
-                        <span asp-validation-for="Username" class="text-danger"></span>
-                    </div>
+            <h2>SalonHair</h2>
+            <p>
+                Tạo tài khoản để đặt lịch dịch vụ,
+                mua sản phẩm và theo dõi lịch sử chăm sóc tóc.
+            </p>
 
-                    <div class="mb-3">
-                        <label asp-for="Email" class="form-label text-warning fw-bold"></label>
-                        <input asp-for="Email" type="email" class="form-control bg-secondary text-light border-0" placeholder="Nhập email của bạn..." />
-                        <span asp-validation-for="Email" class="text-danger"></span>
-                    </div>
-
-                    <div class="mb-4">
-                        <label asp-for="Password" class="form-label text-warning fw-bold"></label>
-                        <input asp-for="Password" type="password" class="form-control bg-secondary text-light border-0" placeholder="Tạo mật khẩu..." />
-                        <span asp-validation-for="Password" class="text-danger"></span>
-                    </div>
-
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-outline-warning btn-lg fw-bold">Đăng Ký Ngay</button>
-                    </div>
-                </form>
-                <div class="text-center mt-4">
-                    <p>Đã có tài khoản? <a asp-action="Login" class="text-warning text-decoration-none fw-bold">Đăng Nhập</a></p>
-                </div>
-            </div>
+            <div class="gold-line"></div>
         </div>
+
+        <div class="login-panel-right">
+            <h3>Đăng ký</h3>
+            <p class="login-subtitle">Tạo tài khoản mới để bắt đầu</p>
+
+            <form asp-action="Register" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="mb-3 text-start">
+                    <label asp-for="Username" class="form-label">Tên đăng nhập</label>
+                    <input asp-for="Username"
+                           class="form-control login-input"
+                           placeholder="Chọn tên đăng nhập..." />
+                    <span asp-validation-for="Username" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3 text-start">
+                    <label asp-for="Email" class="form-label">Email</label>
+                    <input asp-for="Email"
+                           type="email"
+                           class="form-control login-input"
+                           placeholder="Nhập email của bạn..." />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <div class="mb-4 text-start">
+                    <label asp-for="Password" class="form-label">Mật khẩu</label>
+                    <input asp-for="Password"
+                           type="password"
+                           class="form-control login-input"
+                           placeholder="Tạo mật khẩu..." />
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+
+                <button type="submit" class="login-btn">Đăng ký ngay</button>
+            </form>
+
+            <p class="register-text">
+                Đã có tài khoản?
+                <a asp-action="Login">Đăng nhập</a>
+            </p>
+        </div>
+
     </div>
 </div>
 
@@ -48,5 +70,215 @@
 }
 
 <style>
-    .border-gold-card { border: 1px solid rgba(212, 175, 55, 0.3) !important; }
+    body {
+        background: #050505 !important;
+    }
+
+    .login-page {
+        min-height: calc(100vh - 70px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 45px 15px;
+        background:
+            radial-gradient(circle at center, rgba(212,175,55,0.10), transparent 38%),
+            linear-gradient(135deg, #050505, #111111);
+    }
+
+    .login-box {
+        width: 920px;
+        min-height: 500px;
+        display: flex;
+        overflow: hidden;
+        border-radius: 28px;
+        background: #1f2328;
+        border: 1px solid rgba(212, 175, 55, 0.55);
+        box-shadow: 0 25px 60px rgba(0,0,0,0.65);
+    }
+
+    .login-panel-left {
+        width: 43%;
+        position: relative;
+        padding: 75px 45px;
+        color: #fff;
+        text-align: center;
+        background: linear-gradient(145deg, #111111, #25200f);
+        overflow: hidden;
+    }
+
+    .login-panel-left::after {
+        content: "";
+        position: absolute;
+        left: -100px;
+        bottom: -100px;
+        width: 280px;
+        height: 280px;
+        background: rgba(212,175,55,0.15);
+        border: 2px solid rgba(212,175,55,0.4);
+        border-radius: 50%;
+    }
+
+    .logo-circle {
+        width: 78px;
+        height: 78px;
+        margin: 0 auto 22px;
+        border-radius: 50%;
+        background: #d4af37;
+        color: #111;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 35px;
+        box-shadow: 0 0 25px rgba(212,175,55,0.45);
+        position: relative;
+        z-index: 2;
+    }
+
+    .login-panel-left h2,
+    .login-panel-left p,
+    .gold-line {
+        position: relative;
+        z-index: 2;
+    }
+
+    .login-panel-left h2 {
+        color: #d4af37;
+        font-weight: 800;
+        margin-bottom: 15px;
+    }
+
+    .login-panel-left p {
+        color: #d7d7d7;
+        font-size: 15px;
+        line-height: 1.6;
+    }
+
+    .gold-line {
+        width: 150px;
+        height: 2px;
+        background: #d4af37;
+        margin: 32px auto 0;
+    }
+
+    .login-panel-right {
+        width: 57%;
+        padding: 55px 75px;
+        background: #f7f3ea;
+        text-align: center;
+    }
+
+    .login-panel-right h3 {
+        color: #1f2328;
+        font-size: 34px;
+        font-weight: 800;
+        margin-bottom: 5px;
+    }
+
+    .login-subtitle {
+        color: #6c6c6c;
+        margin-bottom: 25px;
+    }
+
+    .form-label {
+        color: #2b2b2b;
+        font-weight: 700;
+    }
+.login-input {
+    border-radius: 30px !important;
+    padding: 12px 20px !important;
+
+    background-color: #ffffff !important;
+    color: #212529 !important;
+
+    border: 2px solid #d4af37 !important;
+}
+
+.login-input:focus {
+    background-color: #ffffff !important;
+    color: #212529 !important;
+
+    border-color: #d4af37 !important;
+    box-shadow: 0 0 0 4px rgba(212,175,55,.25) !important;
+}
+
+.login-input::placeholder {
+    color: #888 !important;
+}
+
+    .login-input:focus {
+        border-color: #d4af37;
+        box-shadow: 0 0 0 3px rgba(212,175,55,0.25);
+    }
+
+    .login-btn {
+        width: 100%;
+        border: none;
+        border-radius: 30px;
+        padding: 13px;
+        background: linear-gradient(135deg, #d4af37, #f0c94d);
+        color: #111;
+        font-weight: 800;
+        text-transform: uppercase;
+        transition: 0.25s;
+    }
+
+    .login-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 22px rgba(212,175,55,0.45);
+    }
+
+    .register-text {
+        margin-top: 24px;
+        color: #333;
+    }
+
+    .register-text a {
+        color: #9b7a12;
+        font-weight: 800;
+        text-decoration: none;
+    }
+
+    .register-text a:hover {
+        text-decoration: underline;
+    }
+
+    main {
+        padding-bottom: 0 !important;
+    }
+
+    .container {
+        max-width: 100% !important;
+        padding: 0 !important;
+    }
+
+    @@media (max-width: 768px) {
+        .login-box {
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .login-panel-left,
+        .login-panel-right {
+            width: 100%;
+            padding: 45px 30px;
+        }
+    }
+
+    .login-input,
+.login-input:focus,
+.login-input:active {
+    background-color: #ffffff !important;
+    color: #212529 !important;
+    border: 2px solid #d4af37 !important;
+}
+
+input.login-input:-webkit-autofill,
+input.login-input:-webkit-autofill:hover,
+input.login-input:-webkit-autofill:focus,
+input.login-input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+    -webkit-text-fill-color: #212529 !important;
+    caret-color: #212529 !important;
+    border: 2px solid #d4af37 !important;
+}
 </style>

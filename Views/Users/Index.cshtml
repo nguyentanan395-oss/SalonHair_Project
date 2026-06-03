@@ -7,6 +7,22 @@
 
 <div class="container-fluid py-4">
 
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="text-warning fw-bold mb-0 text-uppercase">
             <i class="bi bi-people-fill me-2"></i>
@@ -139,7 +155,11 @@
                     </button>
                 </div>
 
-                <form asp-action="Edit" method="post">
+                <form id="editUserForm-@user.Id"
+                      class="ajax-edit-form"
+                      asp-action="Edit"
+                      asp-route-id="@user.Id"
+                      method="post">
                     @Html.AntiForgeryToken()
 
                     <div class="modal-body">
@@ -325,6 +345,50 @@
         </div>
     </div>
 }
+
+<script>
+    document.querySelectorAll('.ajax-edit-form').forEach(function (form) {
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            const modal = bootstrap.Modal.getInstance(document.getElementById('editModal-' + form.getAttribute('id').replace('editUserForm-', '')));
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = 'Đang lưu...';
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: new FormData(form),
+                    headers: {
+                        'RequestVerificationToken': form.querySelector('input[name="__RequestVerificationToken"]').value,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    if (modal) {
+                        modal.hide();
+                    }
+
+                    window.location.reload();
+                } else {
+                    alert(result.message || 'Cập nhật thất bại.');
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Có lỗi xảy ra khi cập nhật.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        });
+    });
+</script>
 
 <style>
     .table-hover tbody tr:hover {

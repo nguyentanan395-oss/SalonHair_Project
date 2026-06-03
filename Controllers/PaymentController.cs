@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Http;
 using SalonHair.Models;
 using System.IO;
 using System.Linq;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 
 namespace SalonHair.Controllers
 {
@@ -15,6 +17,50 @@ namespace SalonHair.Controllers
             _context = context;
         }
 
+        [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Index()
+{
+    var payments = await _context.Payments
+        .Include(p => p.Booking)
+        .Include(p => p.Order)
+        .OrderByDescending(p => p.CreatedAt)
+        .ToListAsync();
+
+    return View(payments);
+}
+
+        [Authorize]
+        public async Task<IActionResult> History()
+        {
+            var payments = await _context.Payments
+                .Include(p => p.Booking)
+                .Include(p => p.Order)
+                .OrderByDescending(p => p.CreatedAt)
+                .ToListAsync();
+
+            return View(payments);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Confirm(int id)
+        {
+            var payment = await _context.Payments.FindAsync(id);
+
+            if (payment == null)
+            {
+                return NotFound();
+            }
+
+            payment.Status = "Đã thanh toán";
+            payment.PaidAt = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
+        }
+
         [HttpPost]
         public IActionResult ProcessPayment(int bookingId, decimal amount, string method)
         {
@@ -23,16 +69,16 @@ namespace SalonHair.Controllers
                 BookingId = bookingId,
                 Amount = amount,
                 Method = method,
-                Status = "Pending",
+                Status = method == "Cash" ? "Chờ thanh toán tại salon" : "Đang xử lý",
                 CreatedAt = DateTime.Now
             };
 
             _context.Payments.Add(payment);
             _context.SaveChanges();
 
-            if (method == "VNPay")
+            if (method == "PayOS")
             {
-                return RedirectToAction("VNPayMock", new { bookingId = bookingId, amount = amount });
+                return RedirectToAction("PayOSMock", new { bookingId = bookingId, amount = amount });
             }
             else if (method == "QRBanking")
             {
@@ -49,6 +95,14 @@ namespace SalonHair.Controllers
 
             return RedirectToAction("PaymentSuccess");
         }
+
+        public IActionResult PayOSMock(int bookingId, decimal amount)
+        {
+            ViewBag.BookingId = bookingId;
+            ViewBag.Amount = amount;
+            return View();
+        }
+
 
         public IActionResult QrPayment(int bookingId)
         {
@@ -113,7 +167,7 @@ namespace SalonHair.Controllers
                 }
 
                 // Cập nhật thông tin ảnh
-                payment.ProofImage = "/uploads/payments/" + fileName;
+                payment.ProofImage = "/uploads/payment/" + fileName;
                 payment.Status = "Pending";
 
                 // Lưu database

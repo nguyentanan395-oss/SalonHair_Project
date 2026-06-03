@@ -68,9 +68,10 @@ namespace SalonHair.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Checkout(Order order)
+        public async Task<IActionResult> Checkout(Order order, string paymentMethod)
         {
             var cart = HttpContext.Session.Get<List<CartItem>>("Cart") ?? new List<CartItem>();
+
             if (cart.Count == 0)
             {
                 return RedirectToAction("Index", "Products");
@@ -79,6 +80,7 @@ namespace SalonHair.Controllers
             if (ModelState.IsValid)
             {
                 var currentCustomer = await GetCurrentCustomerAsync(order.Phone);
+
                 if (currentCustomer != null)
                 {
                     order.CustomerId = currentCustomer.Id;
@@ -102,34 +104,48 @@ namespace SalonHair.Controllers
                         Quantity = item.Quantity,
                         Price = item.Product.Price
                     };
+
                     _context.OrderDetails.Add(orderDetail);
                 }
+
+                await _context.SaveChangesAsync();
+
+                var payment = new Payment
+                {
+                    OrderId = order.Id,
+                    Amount = (decimal)order.TotalAmount,
+                    Method = string.IsNullOrWhiteSpace(paymentMethod) ? "Cash" : paymentMethod,
+                    Status = paymentMethod == "Cash" || string.IsNullOrWhiteSpace(paymentMethod)
+                        ? "Chờ thanh toán khi nhận hàng"
+                        : "Đang xử lý",
+                    TransactionCode = "ORDER_" + order.Id,
+                    CreatedAt = DateTime.Now
+                };
+
+                _context.Payments.Add(payment);
                 await _context.SaveChangesAsync();
 
                 HttpContext.Session.SetString("LastPhone", order.Phone);
-
                 HttpContext.Session.Remove("Cart");
+
                 return View("CheckoutSuccess");
             }
+
             return View(order);
         }
 
-        private async Task<Customer?> GetCurrentCustomerAsync(string? phone = null)
+    private async Task<Customer?> GetCurrentCustomerAsync(string? phone = null)
         {
-            if (User.Identity?.IsAuthenticated != true)
-            {
-                return null;
-            }
+            var username = User.Identity?.Name;
 
-            var userName = User.Identity?.Name;
-            if (string.IsNullOrWhiteSpace(userName))
+            if (string.IsNullOrWhiteSpace(username))
             {
                 return null;
             }
 
             var user = await _context.Users
                 .Include(u => u.Customer)
-                .FirstOrDefaultAsync(u => u.Username == userName);
+                .FirstOrDefaultAsync(u => u.Username == username);
 
             if (user == null)
             {
@@ -138,26 +154,22 @@ namespace SalonHair.Controllers
 
             if (user.Customer != null)
             {
-                var customer = user.Customer;
-                if (!string.IsNullOrWhiteSpace(phone) && string.IsNullOrWhiteSpace(customer.Phone))
-                {
-                    customer.Phone = phone;
-                    await _context.SaveChangesAsync();
-                }
-                return customer;
+                return user.Customer;
             }
 
-            var createdCustomer = new Customer
+            var customer = new Customer
             {
                 UserId = user.Id,
                 Name = user.Username,
                 Email = user.Email,
-                Phone = phone ?? string.Empty
+                Phone = phone ?? ""
             };
 
-            _context.Customers.Add(createdCustomer);
+            _context.Customers.Add(customer);
             await _context.SaveChangesAsync();
-            return createdCustomer;
+
+            return customer;
         }
+
     }
 }
