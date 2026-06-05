@@ -158,15 +158,27 @@ namespace SalonHair.Controllers
         [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
-        {
+{
             var booking = await _context.Bookings.FindAsync(id);
 
-            if (booking != null)
+            if (booking == null)
             {
-                _context.Bookings.Remove(booking);
+                return NotFound();
             }
 
+            var payments = await _context.Payments
+                .Where(p => p.BookingId == id)
+                .ToListAsync();
+
+            if (payments.Any())
+            {
+                _context.Payments.RemoveRange(payments);
+            }
+
+            _context.Bookings.Remove(booking);
             await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Hủy lịch hẹn thành công.";
             return RedirectToAction(nameof(Index));
         }
 

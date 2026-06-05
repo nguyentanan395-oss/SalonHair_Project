@@ -4,227 +4,750 @@
 ViewData["Title"] = "Quản lý khách hàng";
 }
 
-<div class="container-fluid py-4">
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="text-warning fw-bold mb-0 text-uppercase">
-            <i class="bi bi-person-lines-fill me-2"></i> Quản lý khách hàng
-        </h2>
+<div class="customer-page">
+
+<div class="customer-card">
+
+    <div class="page-header">
+        <div>
+            <h2>
+                <i class="bi bi-person-lines-fill me-2"></i>
+                Quản lý khách hàng
+            </h2>
+            <p>Theo dõi thông tin khách hàng, tài khoản, trạng thái và thao tác quản trị</p>
+        </div>
     </div>
 
-    <!-- Search Box -->
-    <div class="card bg-dark border-warning mb-4 shadow">
-        <div class="card-body">
-            <form asp-action="Index" method="get" class="row g-3">
-                <div class="col-md-10">
-                    <div class="input-group">
-                        <span class="input-group-text bg-black border-secondary text-secondary"><i class="bi bi-search"></i></span>
-                        <input type="text" name="search" value="@ViewBag.Search" class="form-control bg-black border-secondary text-white" placeholder="Tìm kiếm theo tên, email hoặc số điện thoại...">
-                    </div>
-                </div>
-                <div class="col-md-2">
-                    <button type="submit" class="btn btn-warning w-100 fw-bold">TÌM KIẾM</button>
-                </div>
-            </form>
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <i class="bi bi-people-fill"></i>
+                <h3>@Model.Count()</h3>
+                <span>Tổng khách hàng</span>
+            </div>
         </div>
+
+        <div class="col-md-3">
+            <div class="stat-card">
+                <i class="bi bi-person-check-fill"></i>
+                <h3>@Model.Count(x => x.User != null && !x.User.IsLocked)</h3>
+                <span>Đang hoạt động</span>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="stat-card danger">
+                <i class="bi bi-person-lock"></i>
+                <h3>@Model.Count(x => x.User != null && x.User.IsLocked)</h3>
+                <span>Đã khóa</span>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="stat-card gold">
+                <i class="bi bi-stars"></i>
+                <h3>VIP</h3>
+                <span>Khách hàng thân thiết</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="search-box">
+        <form asp-action="Index" method="get" class="row g-3 align-items-center">
+            <div class="col-md-10">
+                <div class="input-group">
+                    <span class="input-group-text search-icon">
+                        <i class="bi bi-search"></i>
+                    </span>
+
+                    <input type="text"
+                           name="search"
+                           value="@ViewBag.Search"
+                           class="form-control luxury-input"
+                           placeholder="Tìm kiếm theo tên, email hoặc số điện thoại..." />
+                </div>
+            </div>
+
+            <div class="col-md-2">
+                <button type="submit" class="btn-search">
+                    Tìm kiếm
+                </button>
+            </div>
+        </form>
     </div>
 
     @if (!Model.Any())
     {
-        <div class="alert alert-dark border-warning text-warning text-center">
-            <i class="bi bi-exclamation-circle me-2"></i> Không tìm thấy dữ liệu khách hàng phù hợp.
+        <div class="empty-box">
+            <i class="bi bi-exclamation-circle"></i>
+            <p>Không tìm thấy dữ liệu khách hàng phù hợp.</p>
         </div>
     }
     else
     {
-        <!-- Table -->
-        <div class="card bg-dark border-warning shadow">
-            <div class="table-responsive">
-                <table class="table table-dark table-hover align-middle mb-0">
-                    <thead>
-                        <tr class="text-warning">
-                            <th class="ps-4">Mã KH</th>
-                            <th>Họ tên</th>
-                            <th>Số điện thoại</th>
-                            <th>Email</th>
-                            <th>Tài khoản</th>
-                            <th class="text-center">Trạng thái</th>
-                            <th class="text-end pe-4">Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in Model)
-                        {
-                            <tr>
-                                <td class="ps-4 text-secondary">#@item.Id</td>
-                                <td class="fw-bold">@item.Name</td>
-                                <td>@item.Phone</td>
-                                <td>@item.Email</td>
-                                <td>@(item.User?.Username ?? "N/A")</td>
-                                <td class="text-center">
-                                    @if (item.User != null && item.User.IsLocked)
-                                    {
-                                        <span class="badge bg-danger"><i class="bi bi-lock-fill me-1"></i>Đã khóa</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-success"><i class="bi bi-check-circle-fill me-1"></i>Hoạt động</span>
-                                    }
-                                </td>
-                                <td class="text-end pe-4">
-                                    <div class="btn-group">
-                                        <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#detailsModal-@item.Id" title="Chi tiết">
-                                            <i class="bi bi-eye"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-warning mx-1" data-bs-toggle="modal" data-bs-target="#editModal-@item.Id" title="Sửa">
-                                            <i class="bi bi-pencil-square"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal-@item.Id" title="Xóa">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                        @if (item.User != null)
-                                        {
-                                            <button class="btn btn-sm @(item.User.IsLocked ? "btn-outline-success" : "btn-outline-secondary") ms-1" data-bs-toggle="modal" data-bs-target="#lockModal-@item.Id" title="@(item.User.IsLocked ? "Mở khóa" : "Khóa")">
-                                                <i class="bi @(item.User.IsLocked ? "bi-unlock" : "bi-lock")"></i>
-                                            </button>
-                                        }
+        <div class="table-wrapper">
+            <table class="table table-dark align-middle luxury-table mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-4">Khách hàng</th>
+                        <th>Số điện thoại</th>
+                        <th>Email</th>
+                        <th>Tài khoản</th>
+                        <th class="text-center">Trạng thái</th>
+                        <th class="text-end pe-4">Thao tác</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="ps-4">
+                                <div class="customer-info">
+                                    <div class="avatar-circle">
+                                        @(string.IsNullOrEmpty(item.Name) ? "?" : item.Name.Substring(0, 1).ToUpper())
                                     </div>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
+
+                                    <div>
+                                        <div class="customer-name">
+                                            @item.Name
+                                        </div>
+                                        <small class="text-secondary">
+                                            Mã KH #@item.Id
+                                        </small>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td>
+                                <i class="bi bi-telephone text-warning me-2"></i>
+                                @item.Phone
+                            </td>
+
+                            <td>
+                                <i class="bi bi-envelope text-warning me-2"></i>
+                                @item.Email
+                            </td>
+
+                            <td>
+                                @if (item.User != null)
+                                {
+                                    <span class="account-badge">
+                                        <i class="bi bi-person-circle me-1"></i>
+                                        @item.User.Username
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-secondary">Chưa có tài khoản</span>
+                                }
+                            </td>
+
+                            <td class="text-center">
+                                @if (item.User != null && item.User.IsLocked)
+                                {
+                                    <span class="status-badge locked">
+                                        <i class="bi bi-lock-fill me-1"></i>
+                                        Đã khóa
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge active">
+                                        <i class="bi bi-unlock-fill me-1"></i>
+                                        Hoạt động
+                                    </span>
+                                }
+                            </td>
+
+                            <td class="text-end pe-4">
+                                <div class="action-group">
+                                    <button type="button"
+                                            class="action-btn view-btn"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#detailsModal-@item.Id"
+                                            title="Chi tiết">
+                                        <i class="bi bi-eye-fill"></i>
+                                    </button>
+
+                                    <button type="button"
+                                            class="action-btn edit-btn"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#editModal-@item.Id"
+                                            title="Sửa">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </button>
+
+                                    <button type="button"
+                                            class="action-btn delete-btn"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#deleteModal-@item.Id"
+                                            title="Xóa">
+                                        <i class="bi bi-trash-fill"></i>
+                                    </button>
+
+                                    @if (item.User != null)
+                                    {
+                                        <button type="button"
+                                                class="action-btn @(item.User.IsLocked ? "lock-btn" : "unlock-btn")"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#lockModal-@item.Id"
+                                                title="@(item.User.IsLocked ? "Tài khoản đang khóa" : "Tài khoản đang mở")">
+                                            <i class="bi @(item.User.IsLocked ? "bi-lock-fill" : "bi-unlock-fill")"></i>
+                                        </button>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
         </div>
     }
+
 </div>
 
-<!-- Modals -->
+
+</div>
+
 @foreach (var item in Model)
-{
-    <!-- Details Modal (Chi tiết) -->
-    <div class="modal fade" id="detailsModal-@item.Id" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content bg-dark text-white border-info shadow-lg">
-                <div class="modal-header border-secondary">
-                    <h5 class="modal-title text-info"><i class="bi bi-info-circle me-2"></i>Chi tiết khách hàng</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body py-4">
-                    <div class="row g-3">
-                        <div class="col-4 text-secondary text-uppercase small fw-bold">Họ và tên:</div>
-                        <div class="col-8 fw-bold">@item.Name</div>
-                        <div class="col-4 text-secondary text-uppercase small fw-bold">Số điện thoại:</div>
-                        <div class="col-8">@item.Phone</div>
-                        <div class="col-4 text-secondary text-uppercase small fw-bold">Email:</div>
-                        <div class="col-8">@item.Email</div>
-                        <div class="col-4 text-secondary text-uppercase small fw-bold">Tài khoản:</div>
-                        <div class="col-8">@(item.User?.Username ?? "Chưa có tài khoản")</div>
-                        <div class="col-4 text-secondary text-uppercase small fw-bold">Trạng thái:</div>
-                        <div class="col-8">
-                            <span class="badge @(item.User?.IsLocked == true ? "bg-danger" : "bg-success")">
-                                @(item.User?.IsLocked == true ? "Đã khóa" : "Hoạt động")
-                            </span>
-                        </div>
+{ <div class="modal fade" id="detailsModal-@item.Id" tabindex="-1"> <div class="modal-dialog modal-dialog-centered"> <div class="modal-content luxury-modal"> <div class="modal-header"> <h5 class="modal-title text-info fw-bold"> <i class="bi bi-info-circle me-2"></i>
+Chi tiết khách hàng </h5> <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button> </div>
+
+
+            <div class="modal-body">
+                <div class="profile-box">
+                    <div class="profile-avatar">
+                        @(string.IsNullOrEmpty(item.Name) ? "?" : item.Name.Substring(0, 1).ToUpper())
                     </div>
+                    <h4>@item.Name</h4>
+                    <p>Mã khách hàng #@item.Id</p>
                 </div>
-                <div class="modal-footer border-secondary">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+
+                <div class="detail-row">
+                    <span>Điện thoại</span>
+                    <strong>@item.Phone</strong>
                 </div>
+
+                <div class="detail-row">
+                    <span>Email</span>
+                    <strong>@item.Email</strong>
+                </div>
+
+                <div class="detail-row">
+                    <span>Tài khoản</span>
+                    <strong>@(item.User?.Username ?? "Chưa có tài khoản")</strong>
+                </div>
+
+                <div class="detail-row">
+                    <span>Trạng thái</span>
+                    @if (item.User?.IsLocked == true)
+                    {
+                        <strong class="text-danger">Đã khóa</strong>
+                    }
+                    else
+                    {
+                        <strong class="text-success">Hoạt động</strong>
+                    }
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Đóng</button>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Edit Modal (Sửa) -->
-    <div class="modal fade" id="editModal-@item.Id" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content bg-dark text-white border-warning">
-                <div class="modal-header border-secondary">
-                    <h5 class="modal-title text-warning"><i class="bi bi-pencil-square me-2"></i>Sửa thông tin khách hàng</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+<div class="modal fade" id="editModal-@item.Id" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content luxury-modal">
+            <div class="modal-header">
+                <h5 class="modal-title text-warning fw-bold">
+                    <i class="bi bi-pencil-square me-2"></i>
+                    Sửa thông tin khách hàng
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <form asp-action="Edit" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="Id" value="@item.Id" />
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Họ và tên</label>
+                        <input type="text" name="Name" value="@item.Name" class="form-control luxury-input" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Số điện thoại</label>
+                        <input type="text" name="Phone" value="@item.Phone" class="form-control luxury-input" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="Email" value="@item.Email" class="form-control luxury-input" required />
+                    </div>
                 </div>
-                <form asp-action="Edit" method="post">
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-warning fw-bold">Lưu thay đổi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteModal-@item.Id" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content luxury-modal danger-modal">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger fw-bold">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Xác nhận xóa khách hàng
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body text-center">
+                <div class="modal-icon-danger">
+                    <i class="bi bi-trash-fill"></i>
+                </div>
+
+                <p>
+                    Bạn có chắc chắn muốn xóa khách hàng
+                    <br />
+                    <strong class="text-warning">@item.Name</strong>
+                    không?
+                </p>
+
+                <small class="text-secondary">
+                    Thao tác này có thể ảnh hưởng đến dữ liệu liên quan.
+                </small>
+            </div>
+
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-outline-light px-4" data-bs-dismiss="modal">Hủy</button>
+
+                <form asp-action="Delete" asp-route-id="@item.Id" method="post">
                     @Html.AntiForgeryToken()
-                    <input type="hidden" name="Id" value="@item.Id" />
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label class="form-label text-secondary small fw-bold text-uppercase">Họ và tên</label>
-                            <input type="text" name="Name" value="@item.Name" class="form-control bg-black border-secondary text-white" required />
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label text-secondary small fw-bold text-uppercase">Số điện thoại</label>
-                            <input type="text" name="Phone" value="@item.Phone" class="form-control bg-black border-secondary text-white" required />
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label text-secondary small fw-bold text-uppercase">Email</label>
-                            <input type="email" name="Email" value="@item.Email" class="form-control bg-black border-secondary text-white" required />
-                        </div>
-                    </div>
-                    <div class="modal-footer border-secondary">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Hủy</button>
-                        <button type="submit" class="btn btn-warning fw-bold">LƯU THAY ĐỔI</button>
-                    </div>
+                    <button type="submit" class="btn btn-danger fw-bold px-4">Xóa</button>
                 </form>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Delete Modal (Xác nhận xóa) -->
-    <div class="modal fade" id="deleteModal-@item.Id" tabindex="-1">
+@if (item.User != null)
+{
+    <div class="modal fade" id="lockModal-@item.Id" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content bg-dark text-white border-danger shadow-lg">
-                <div class="modal-header border-danger">
-                    <h5 class="modal-title text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Xác nhận xóa</h5>
+            <div class="modal-content luxury-modal">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold @(item.User.IsLocked ? "text-danger" : "text-success")">
+                        <i class="bi @(item.User.IsLocked ? "bi-lock-fill" : "bi-unlock-fill") me-2"></i>
+                        @(item.User.IsLocked ? "Tài khoản đang khóa" : "Tài khoản đang mở")
+                    </h5>
+
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body text-center py-4">
-                    <p>Bạn có chắc chắn muốn xóa vĩnh viễn khách hàng này?</p>
-                    <h4 class="text-warning">@item.Name</h4>
-                    <p class="text-secondary small">Thao tác này sẽ xóa mọi dữ liệu liên quan.</p>
+
+                <div class="modal-body text-center">
+                    <div class="modal-icon @(item.User.IsLocked ? "modal-icon-danger" : "modal-icon-success")">
+                        <i class="bi @(item.User.IsLocked ? "bi-lock-fill" : "bi-unlock-fill")"></i>
+                    </div>
+
+                    <p>
+                        Bạn có muốn
+                        <strong class="@(item.User.IsLocked ? "text-success" : "text-warning")">
+                            @(item.User.IsLocked ? "mở khóa" : "khóa")
+                        </strong>
+                        tài khoản của
+                        <br />
+                        <strong class="text-warning">@item.Name</strong>
+                        không?
+                    </p>
                 </div>
-                <div class="modal-footer border-secondary">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <form asp-action="Delete" asp-route-id="@item.Id" method="post">
+
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-outline-light px-4" data-bs-dismiss="modal">Hủy</button>
+
+                    <form asp-action="LockUnlock" asp-route-id="@item.Id" method="post">
                         @Html.AntiForgeryToken()
-                        <button type="submit" class="btn btn-danger fw-bold px-4">XÓA NGAY</button>
+
+                        <button type="submit"
+                                class="btn px-4 fw-bold @(item.User.IsLocked ? "btn-success" : "btn-warning")">
+                            @(item.User.IsLocked ? "Mở khóa" : "Khóa")
+                        </button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
+}
 
-    <!-- Lock/Unlock Modal (Xác nhận khóa) -->
-    @if (item.User != null)
-    {
-        <div class="modal fade" id="lockModal-@item.Id" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content bg-dark text-white border-secondary">
-                    <div class="modal-header border-secondary">
-                        <h5 class="modal-title">
-                            <i class="bi @(item.User.IsLocked ? "bi-unlock-fill" : "bi-lock-fill") me-2"></i>
-                            @(item.User.IsLocked ? "Mở khóa truy cập" : "Khóa truy cập")
-                        </h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body py-4">
-                        Bạn có chắc chắn muốn @(item.User.IsLocked ? "mở lại quyền" : "tạm dừng quyền") truy cập hệ thống của <strong>@item.Name</strong>?
-                    </div>
-                    <div class="modal-footer border-secondary">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Hủy</button>
-                        <form asp-action="LockUnlock" asp-route-id="@item.Id" method="post">
-                            @Html.AntiForgeryToken()
-                            <button type="submit" class="btn @(item.User.IsLocked ? "btn-success" : "btn-warning") fw-bold text-dark">XÁC NHẬN</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    }
+
 }
 
 <style>
-    .table-hover tbody tr:hover { background-color: rgba(212, 175, 55, 0.08) !important; transition: background-color 0.3s ease; }
-    .form-control:focus, .form-select:focus { background-color: #000 !important; border-color: #d4af37 !important; color: #fff; box-shadow: 0 0 0 0.25rem rgba(212, 175, 55, 0.25); }
-    .modal-content { border-width: 1px; }
-    .btn-group .btn { border-radius: 6px; }
+    body {
+        background: #050505 !important;
+    }
+
+    .customer-page {
+        min-height: calc(100vh - 80px);
+        padding: 40px 15px;
+        background:
+            radial-gradient(circle at top left, rgba(212,175,55,0.12), transparent 35%),
+            linear-gradient(135deg, #050505, #111);
+    }
+
+    .customer-card {
+        max-width: 1250px;
+        margin: auto;
+        padding: 28px;
+        border-radius: 28px;
+        background: linear-gradient(145deg, #151515, #222);
+        border: 1px solid rgba(212,175,55,0.42);
+        box-shadow: 0 30px 70px rgba(0,0,0,.72);
+    }
+
+    .page-header {
+        margin-bottom: 24px;
+        padding-bottom: 22px;
+        border-bottom: 1px solid rgba(212,175,55,.22);
+    }
+
+    .page-header h2 {
+        color: #d4af37;
+        font-weight: 900;
+        text-transform: uppercase;
+        margin: 0;
+    }
+
+    .page-header p {
+        color: #bfbfbf;
+        margin: 6px 0 0;
+    }
+
+    .stat-card {
+        height: 135px;
+        padding: 22px;
+        border-radius: 22px;
+        background: rgba(255,255,255,.035);
+        border: 1px solid rgba(212,175,55,.22);
+        color: #fff;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card i {
+        color: #d4af37;
+        font-size: 30px;
+    }
+
+    .stat-card h3 {
+        margin: 8px 0 0;
+        font-weight: 900;
+        font-size: 31px;
+    }
+
+    .stat-card span {
+        color: #bfbfbf;
+        font-size: 14px;
+    }
+
+    .stat-card::after {
+        content: "";
+        position: absolute;
+        right: -35px;
+        bottom: -35px;
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        border: 1px solid rgba(212,175,55,.22);
+    }
+
+    .stat-card.danger i {
+        color: #ff6b7a;
+    }
+
+    .stat-card.gold {
+        background: linear-gradient(145deg, rgba(212,175,55,.16), rgba(255,255,255,.035));
+    }
+
+    .search-box {
+        padding: 18px;
+        margin-bottom: 24px;
+        border-radius: 20px;
+        background: rgba(0,0,0,.28);
+        border: 1px solid rgba(255,255,255,.07);
+    }
+
+    .search-icon {
+        background: #111;
+        border: 1px solid rgba(212,175,55,.22);
+        color: #d4af37;
+        border-radius: 14px 0 0 14px;
+    }
+
+    .luxury-input {
+        min-height: 48px;
+        background: #111;
+        color: #fff;
+        border: 1px solid rgba(212,175,55,.22);
+        border-radius: 0 14px 14px 0;
+    }
+
+    .modal .luxury-input {
+        border-radius: 14px;
+        background: #1d1d1d;
+    }
+
+    .luxury-input:focus {
+        background: #181818;
+        color: #fff;
+        border-color: #d4af37;
+        box-shadow: 0 0 0 3px rgba(212,175,55,.2);
+    }
+
+    .btn-search {
+        width: 100%;
+        height: 48px;
+        border: none;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #d4af37, #f5d76e);
+        color: #111;
+        font-weight: 900;
+        text-transform: uppercase;
+    }
+
+    .empty-box {
+        padding: 45px;
+        text-align: center;
+        border-radius: 22px;
+        color: #d4af37;
+        border: 1px dashed rgba(212,175,55,.35);
+        background: rgba(212,175,55,.05);
+    }
+
+    .empty-box i {
+        font-size: 38px;
+        margin-bottom: 10px;
+    }
+
+    .table-wrapper {
+        overflow: hidden;
+        border-radius: 20px;
+        border: 1px solid rgba(255,255,255,.07);
+    }
+
+    .luxury-table thead tr {
+        background: #080808;
+        color: #d4af37;
+        text-transform: uppercase;
+        font-size: 13px;
+        letter-spacing: .7px;
+    }
+
+    .luxury-table th,
+    .luxury-table td {
+        padding: 18px 16px;
+        border-color: rgba(255,255,255,.06);
+    }
+
+    .luxury-table tbody tr:hover {
+        background: rgba(212,175,55,.07) !important;
+    }
+
+    .customer-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .avatar-circle,
+    .profile-avatar {
+        border-radius: 50%;
+        background: linear-gradient(135deg, #d4af37, #f5d76e);
+        color: #111;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 900;
+    }
+
+    .avatar-circle {
+        width: 42px;
+        height: 42px;
+    }
+
+    .customer-name {
+        color: #fff;
+        font-weight: 900;
+    }
+
+    .account-badge,
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 7px 12px;
+        border-radius: 30px;
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    .account-badge {
+        color: #d4af37;
+        background: rgba(212,175,55,.1);
+        border: 1px solid rgba(212,175,55,.28);
+    }
+
+    .status-badge.locked {
+        color: #ff6b7a;
+        background: rgba(220,53,69,.15);
+        border: 1px solid rgba(220,53,69,.45);
+    }
+
+    .status-badge.active {
+        color: #75d69c;
+        background: rgba(25,135,84,.15);
+        border: 1px solid rgba(25,135,84,.45);
+    }
+
+    .action-group {
+        display: flex;
+        justify-content: flex-end;
+        gap: 7px;
+    }
+
+    .action-btn {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        border: 1px solid;
+        background: transparent;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: .2s;
+    }
+
+    .view-btn {
+        color: #0dcaf0;
+        border-color: rgba(13,202,240,.45);
+    }
+
+    .edit-btn {
+        color: #d4af37;
+        border-color: rgba(212,175,55,.45);
+    }
+
+    .delete-btn {
+        color: #dc3545;
+        border-color: rgba(220,53,69,.45);
+    }
+
+    .lock-btn {
+        color: #ffc107;
+        border-color: rgba(255,193,7,.45);
+    }
+
+    .unlock-btn {
+        color: #20c997;
+        border-color: rgba(32,201,151,.45);
+    }
+
+    .action-btn:hover {
+        transform: translateY(-2px);
+        background: rgba(255,255,255,.06);
+    }
+
+    .luxury-modal {
+        background: linear-gradient(145deg, #151515, #222);
+        color: #fff;
+        border: 1px solid rgba(212,175,55,.42);
+        border-radius: 22px;
+        overflow: hidden;
+        box-shadow: 0 25px 70px rgba(0,0,0,.75);
+    }
+
+    .luxury-modal .modal-header,
+    .luxury-modal .modal-footer {
+        border-color: rgba(255,255,255,.08);
+    }
+
+    .profile-box {
+        text-align: center;
+        padding-bottom: 20px;
+        margin-bottom: 18px;
+        border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+
+    .profile-avatar {
+        width: 72px;
+        height: 72px;
+        margin: 0 auto 12px;
+        font-size: 30px;
+    }
+
+    .profile-box h4 {
+        color: #d4af37;
+        font-weight: 900;
+        margin-bottom: 2px;
+    }
+
+    .profile-box p {
+        color: #999;
+        margin: 0;
+    }
+
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+
+    .detail-row span {
+        color: #999;
+    }
+
+    .modal-icon-danger,
+    .modal-icon-success {
+        width: 76px;
+        height: 76px;
+        margin: 0 auto 18px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 34px;
+    }
+
+    .modal-icon-danger {
+        background: rgba(220,53,69,.12);
+        color: #dc3545;
+        border: 1px solid rgba(220,53,69,.45);
+    }
+
+    .modal-icon-success {
+        background: rgba(25,135,84,.12);
+        color: #28d17c;
+        border: 1px solid rgba(25,135,84,.45);
+    }
+
+    @@media (max-width: 768px) {
+        .action-group {
+            justify-content: flex-start;
+        }
+
+        .detail-row {
+            flex-direction: column;
+            gap: 4px;
+        }
+    }
 </style>

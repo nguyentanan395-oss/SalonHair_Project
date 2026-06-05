@@ -38,7 +38,10 @@
 
                 <div class="mb-2 text-start">
                     <label asp-for="Password" class="form-label">Mật khẩu</label>
-                    <input asp-for="Password" type="password" class="form-control login-input" placeholder="Nhập mật khẩu..." />
+                    <div class="password-wrapper">
+                        <input asp-for="Password" type="password" id="password-input" class="form-control login-input" placeholder="Nhập mật khẩu..." />
+                        <i class="bi bi-eye-slash toggle-password" id="toggle-password-icon"></i>
+                    </div>
                     <span asp-validation-for="Password" class="text-danger"></span>
                 </div>
 
@@ -57,14 +60,10 @@
     </div>
 </div>
 
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-}
-
 <style>
     body {
-    background: #050505 !important;
-}
+        background: #050505 !important;
+    }
 
     .login-page {
         min-height: calc(100vh - 70px);
@@ -97,17 +96,17 @@
         background: linear-gradient(145deg, #111111, #2b2412);
     }
 
-   .login-panel-left::after {
-    content: "";
-    position: absolute;
-    left: -100px;
-    bottom: -100px;
-    width: 280px;
-    height: 280px;
-    background: rgba(212,175,55,0.15);
-    border: 2px solid rgba(212,175,55,0.4);
-    border-radius: 50%;
-}
+    .login-panel-left::after {
+        content: "";
+        position: absolute;
+        left: -100px;
+        bottom: -100px;
+        width: 280px;
+        height: 280px;
+        background: rgba(212,175,55,0.15);
+        border: 2px solid rgba(212,175,55,0.4);
+        border-radius: 50%;
+    }
 
     .logo-circle {
         width: 78px;
@@ -224,6 +223,33 @@
         text-decoration: none;
     }
 
+    /* Style nhóm ẩn hiện mật khẩu */
+    .password-wrapper {
+        position: relative;
+        width: 100%;
+    }
+
+    .password-wrapper .login-input {
+        padding-right: 45px; 
+        width: 100%;
+    }
+
+    .toggle-password {
+        position: absolute;
+        right: 18px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #9b7a12;
+        font-size: 18px;
+        transition: color 0.2s ease;
+        z-index: 10;
+    }
+
+    .toggle-password:hover {
+        color: #d4af37;
+    }
+
     @@media (max-width: 768px) {
         .login-box {
             flex-direction: column;
@@ -237,3 +263,28 @@
         }
     }
 </style>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const passwordInput = document.getElementById("password-input");
+            const togglePasswordIcon = document.getElementById("toggle-password-icon");
+
+            if (togglePasswordIcon && passwordInput) {
+                togglePasswordIcon.addEventListener("click", function () {
+                    if (passwordInput.type === "password") {
+                        passwordInput.type = "text";
+                        togglePasswordIcon.classList.remove("bi-eye-slash");
+                        togglePasswordIcon.classList.add("bi-eye");
+                    } else {
+                        passwordInput.type = "password";
+                        togglePasswordIcon.classList.remove("bi-eye");
+                        togglePasswordIcon.classList.add("bi-eye-slash");
+                    }
+                });
+            }
+        });
+    </script>
+}

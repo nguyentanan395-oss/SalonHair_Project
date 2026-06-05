@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SalonHair.Models;
-using SalonHair.Models;
 using SalonHair.Services;
 using System.Security.Claims;
 
@@ -125,6 +124,9 @@ namespace SalonHair.Controllers
             return View();
         }
 
+
+        
+
         public IActionResult Register()
         {
             return View();
@@ -168,6 +170,100 @@ namespace SalonHair.Controllers
                 return RedirectToAction("VerifyOtp", new { username = user.Username });
             }
             return View(user);
+        }
+
+
+        [HttpGet]
+            public IActionResult ForgotPassword()
+            {
+                return View();
+            }
+
+            [HttpPost]
+            [ValidateAntiForgeryToken]
+            public async Task<IActionResult> ForgotPassword(string email)
+            {
+                if (string.IsNullOrEmpty(email))
+                {
+                    ModelState.AddModelError("", "Vui lòng nhập email.");
+                    return View();
+                }
+
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+
+                if (user == null)
+                {
+                    ModelState.AddModelError("", "Email không tồn tại trong hệ thống.");
+                    return View();
+                }
+
+                var random = new Random();
+                var otp = random.Next(100000, 999999).ToString();
+
+                user.OtpCode = otp;
+                user.OtpExpiryTime = DateTime.UtcNow.AddMinutes(5);
+
+                await _context.SaveChangesAsync();
+
+                await _emailService.SendOtpEmailAsync(user.Email, otp);
+
+                return RedirectToAction("ResetPassword", new { email = user.Email });
+            }
+
+            [HttpGet]
+            public IActionResult ResetPassword(string email)
+            {
+                if (string.IsNullOrEmpty(email))
+                {
+                    return RedirectToAction("ForgotPassword");
+                }
+
+                ViewBag.Email = email;
+                return View();
+            }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(string email, string otpCode, string newPassword, string confirmPassword)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+
+            if (user == null)
+            {
+                ModelState.AddModelError("", "Tài khoản không tồn tại.");
+                ViewBag.Email = email;
+                return View();
+            }
+
+            if (user.OtpCode != otpCode || !user.OtpExpiryTime.HasValue || user.OtpExpiryTime.Value < DateTime.UtcNow)
+            {
+                ModelState.AddModelError("", "Mã OTP không đúng hoặc đã hết hạn.");
+                ViewBag.Email = email;
+                return View();
+            }
+
+            if (string.IsNullOrEmpty(newPassword) || newPassword.Length < 6)
+            {
+                ModelState.AddModelError("", "Mật khẩu mới phải từ 6 ký tự trở lên.");
+                ViewBag.Email = email;
+                return View();
+            }
+
+            if (newPassword != confirmPassword)
+            {
+                ModelState.AddModelError("", "Mật khẩu xác nhận không khớp.");
+                ViewBag.Email = email;
+                return View();
+            }
+
+            user.Password = BCrypt.Net.BCrypt.HashPassword(newPassword);
+            user.OtpCode = null;
+            user.OtpExpiryTime = null;
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Đặt lại mật khẩu thành công. Vui lòng đăng nhập.";
+            return RedirectToAction("Login");
         }
 
         public async Task<IActionResult> Logout()

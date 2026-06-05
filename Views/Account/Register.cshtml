@@ -29,28 +29,32 @@
 
                 <div class="mb-3 text-start">
                     <label asp-for="Username" class="form-label">Tên đăng nhập</label>
-                    <input asp-for="Username"
-                           class="form-control login-input"
-                           placeholder="Chọn tên đăng nhập..." />
+                    <input asp-for="Username" class="form-control login-input" placeholder="Chọn tên đăng nhập..." />
                     <span asp-validation-for="Username" class="text-danger"></span>
                 </div>
 
                 <div class="mb-3 text-start">
                     <label asp-for="Email" class="form-label">Email</label>
-                    <input asp-for="Email"
-                           type="email"
-                           class="form-control login-input"
-                           placeholder="Nhập email của bạn..." />
+                    <input asp-for="Email" type="email" class="form-control login-input" placeholder="Nhập email của bạn..." />
                     <span asp-validation-for="Email" class="text-danger"></span>
                 </div>
 
-                <div class="mb-4 text-start">
+                <div class="mb-3 text-start">
                     <label asp-for="Password" class="form-label">Mật khẩu</label>
-                    <input asp-for="Password"
-                           type="password"
-                           class="form-control login-input"
-                           placeholder="Tạo mật khẩu..." />
+                    <div class="password-wrapper">
+                        <input asp-for="Password" type="password" id="password-input" class="form-control login-input" placeholder="Tạo mật khẩu..." />
+                        <i class="bi bi-eye-slash toggle-password" data-target="password-input"></i>
+                    </div>
                     <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+
+                <div class="mb-4 text-start">
+                    <label class="form-label">Xác nhận mật khẩu</label>
+                    <div class="password-wrapper">
+                        <input type="password" name="ConfirmPassword" id="confirm-password-input" class="form-control login-input" placeholder="Nhập lại mật khẩu..." data-val="true" data-val-equalto="Mật khẩu xác nhận không trùng khớp." data-val-equalto-other="Password" />
+                        <i class="bi bi-eye-slash toggle-password" data-target="confirm-password-input"></i>
+                    </div>
+                    <span class="text-danger" data-valmsg-for="ConfirmPassword" data-valmsg-replace="true"></span>
                 </div>
 
                 <button type="submit" class="login-btn">Đăng ký ngay</button>
@@ -64,10 +68,6 @@
 
     </div>
 </div>
-
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-}
 
 <style>
     body {
@@ -183,31 +183,23 @@
         color: #2b2b2b;
         font-weight: 700;
     }
-.login-input {
-    border-radius: 30px !important;
-    padding: 12px 20px !important;
 
-    background-color: #ffffff !important;
-    color: #212529 !important;
-
-    border: 2px solid #d4af37 !important;
-}
-
-.login-input:focus {
-    background-color: #ffffff !important;
-    color: #212529 !important;
-
-    border-color: #d4af37 !important;
-    box-shadow: 0 0 0 4px rgba(212,175,55,.25) !important;
-}
-
-.login-input::placeholder {
-    color: #888 !important;
-}
+    .login-input,
+    .login-input:focus,
+    .login-input:active {
+        border-radius: 30px !important;
+        padding: 12px 20px !important;
+        background-color: #ffffff !important;
+        color: #212529 !important;
+        border: 2px solid #d4af37 !important;
+    }
 
     .login-input:focus {
-        border-color: #d4af37;
-        box-shadow: 0 0 0 3px rgba(212,175,55,0.25);
+        box-shadow: 0 0 0 4px rgba(212,175,55,.25) !important;
+    }
+
+    .login-input::placeholder {
+        color: #888 !important;
     }
 
     .login-btn {
@@ -251,6 +243,43 @@
         padding: 0 !important;
     }
 
+    /* Style cho cấu trúc ẩn hiện mật khẩu */
+    .password-wrapper {
+        position: relative;
+        width: 100%;
+    }
+
+    .password-wrapper .login-input {
+        padding-right: 45px !important; 
+        width: 100%;
+    }
+
+    .toggle-password {
+        position: absolute;
+        right: 18px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #9b7a12;
+        font-size: 18px;
+        transition: color 0.2s ease;
+        z-index: 10;
+    }
+
+    .toggle-password:hover {
+        color: #d4af37;
+    }
+
+    input.login-input:-webkit-autofill,
+    input.login-input:-webkit-autofill:hover,
+    input.login-input:-webkit-autofill:focus,
+    input.login-input:-webkit-autofill:active {
+        -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+        -webkit-text-fill-color: #212529 !important;
+        caret-color: #212529 !important;
+        border: 2px solid #d4af37 !important;
+    }
+
     @@media (max-width: 768px) {
         .login-box {
             flex-direction: column;
@@ -263,22 +292,34 @@
             padding: 45px 30px;
         }
     }
-
-    .login-input,
-.login-input:focus,
-.login-input:active {
-    background-color: #ffffff !important;
-    color: #212529 !important;
-    border: 2px solid #d4af37 !important;
-}
-
-input.login-input:-webkit-autofill,
-input.login-input:-webkit-autofill:hover,
-input.login-input:-webkit-autofill:focus,
-input.login-input:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
-    -webkit-text-fill-color: #212529 !important;
-    caret-color: #212529 !important;
-    border: 2px solid #d4af37 !important;
-}
 </style>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const togglePasswordIcons = document.querySelectorAll(".toggle-password");
+
+            togglePasswordIcons.forEach(icon => {
+                icon.addEventListener("click", function () {
+                    // Lấy id của input mục tiêu được lưu trong thuộc tính data-target
+                    const targetId = this.getAttribute("data-target");
+                    const passwordInput = document.getElementById(targetId);
+
+                    if (passwordInput) {
+                        if (passwordInput.type === "password") {
+                            passwordInput.type = "text";
+                            this.classList.remove("bi-eye-slash");
+                            this.classList.add("bi-eye");
+                        } else {
+                            passwordInput.type = "password";
+                            this.classList.remove("bi-eye");
+                            this.classList.add("bi-eye-slash");
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+}
