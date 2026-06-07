@@ -115,12 +115,20 @@ if (appRoot) {
       "loading",
     );
 
+    state.faceApiReady = false;
+
     try {
-      if (typeof faceapi !== 'undefined') {
-        await faceapi.nets.tinyFaceDetector.loadFromUri('/vendor/face-api/models');
-        await faceapi.nets.ageGenderNet.loadFromUri('/vendor/face-api/models');
+      if (typeof faceapi !== "undefined") {
+        await faceapi.nets.tinyFaceDetector.loadFromUri(
+          "/vendor/face-api/models",
+        );
+        await faceapi.nets.ageGenderNet.loadFromUri("/vendor/face-api/models");
+        state.faceApiReady = true;
       }
-    } catch(e) { console.error("Error loading faceapi", e); }
+    } catch (e) {
+      state.faceApiReady = false;
+      console.error("Error loading faceapi", e);
+    }
 
     try {
       const filesetResolver = await withTimeout(
@@ -491,39 +499,49 @@ if (appRoot) {
       );
     }
 
-    if (typeof faceapi !== 'undefined') {
-        try {
-            const media = source === "video" ? dom.video : state.image;
-            const now = Date.now();
-            if (media && (!state.selectedGender || now - (state.lastFaceApiAt || 0) > 3000)) {
-                state.lastFaceApiAt = now;
-                const runFaceApi = async () => {
-                    const faceResult = await faceapi.detectSingleFace(media, new faceapi.TinyFaceDetectorOptions()).withAgeAndGender();
-                    if (faceResult) {
-                        const gender = faceResult.gender === 'male' ? 'Nam' : 'Nữ';
-                        let ageGroup = '';
-                        if (faceResult.age < 18) ageGroup = 'Dưới 18';
-                        else if (faceResult.age <= 30) ageGroup = '18-30';
-                        else if (faceResult.age <= 45) ageGroup = '31-45';
-                        else ageGroup = '46+';
-                        
-                        if (dom.genderSelect.value !== gender || dom.ageGroupSelect.value !== ageGroup) {
-                            dom.genderSelect.value = gender;
-                            dom.ageGroupSelect.value = ageGroup;
-                            state.selectedGender = gender;
-                            state.selectedAgeGroup = ageGroup;
-                            dom.genderSelect.dispatchEvent(new Event('change'));
-                            dom.profileHint.textContent = `AI tự động nhận diện: ${gender}, khoảng ${Math.round(faceResult.age)} tuổi.`;
-                        }
-                    }
-                };
-                if (source === "video") {
-                    runFaceApi();
-                } else {
-                    await runFaceApi();
-                }
+    if (state.faceApiReady && typeof faceapi !== "undefined") {
+      try {
+        const media = source === "video" ? dom.video : state.image;
+        const now = Date.now();
+        if (
+          media &&
+          (!state.selectedGender || now - (state.lastFaceApiAt || 0) > 3000)
+        ) {
+          state.lastFaceApiAt = now;
+          const runFaceApi = async () => {
+            const faceResult = await faceapi
+              .detectSingleFace(media, new faceapi.TinyFaceDetectorOptions())
+              .withAgeAndGender();
+            if (faceResult) {
+              const gender = faceResult.gender === "male" ? "Nam" : "Nữ";
+              let ageGroup = "";
+              if (faceResult.age < 18) ageGroup = "Dưới 18";
+              else if (faceResult.age <= 30) ageGroup = "18-30";
+              else if (faceResult.age <= 45) ageGroup = "31-45";
+              else ageGroup = "46+";
+
+              if (
+                dom.genderSelect.value !== gender ||
+                dom.ageGroupSelect.value !== ageGroup
+              ) {
+                dom.genderSelect.value = gender;
+                dom.ageGroupSelect.value = ageGroup;
+                state.selectedGender = gender;
+                state.selectedAgeGroup = ageGroup;
+                dom.genderSelect.dispatchEvent(new Event("change"));
+                dom.profileHint.textContent = `AI tự động nhận diện: ${gender}, khoảng ${Math.round(faceResult.age)} tuổi.`;
+              }
             }
-        } catch(e) { console.error("Face-api detection error:", e); }
+          };
+          if (source === "video") {
+            runFaceApi();
+          } else {
+            await runFaceApi();
+          }
+        }
+      } catch (e) {
+        console.error("Face-api detection error:", e);
+      }
     }
 
     return maybeSendAnalysis(analysis, metrics, source, analysisToken);
@@ -537,10 +555,9 @@ if (appRoot) {
 
     if (!profile.ready) {
       setStatus(
-        "Chưa chọn giới tính/độ tuổi. AI vẫn nhận diện khuôn mặt nhưng chưa gợi ý kiểu tóc.",
-        "loading",
+        "Chưa chọn giới tính/độ tuổi, AI vẫn sẽ gợi ý kiểu tóc chung để bạn xem kết quả ngay.",
+        "ready",
       );
-      return;
     }
 
     if (state.isSending) {
@@ -574,8 +591,8 @@ if (appRoot) {
         },
         body: JSON.stringify({
           detectedShape: analysis.shape,
-          gender: profile.gender,
-          ageGroup: profile.ageGroup,
+          gender: profile.gender || "",
+          ageGroup: profile.ageGroup || "",
           confidence: analysis.confidence,
           faceLengthRatio: metrics.lengthToCheekRatio,
           foreheadWidthRatio: metrics.foreheadToCheekRatio,
@@ -656,8 +673,7 @@ if (appRoot) {
         dom.metricShape.textContent = correctedShape;
       }
 
-      const profile = getSelectedProfile();
-      if (profile.ready && state.lastAnalysis) {
+      if (state.lastAnalysis) {
         await refreshSuggestionsForShape(correctedShape, true);
       }
 
@@ -797,11 +813,10 @@ if (appRoot) {
         );
         setFeedbackStatus("AI đã nạp model mới từ dataset local.", "success");
 
-        const profile = getSelectedProfile();
         const manualShape =
           state.lastCorrectedShape || state.lastAnalysis?.shape;
 
-        if (manualShape && profile.ready) {
+        if (manualShape) {
           setStatus(
             `Đang cập nhật gợi ý cho khuôn mặt ${manualShape}...`,
             "loading",
@@ -811,10 +826,10 @@ if (appRoot) {
             `AI đã chuyển sang gợi ý theo khuôn mặt ${manualShape}.`,
             "success",
           );
-        } else if (!profile.ready) {
+        } else {
           setDatasetStatus(
-            "Vui lòng chọn giới tính và độ tuổi để nhận gợi ý sau khi train.",
-            "warning",
+            "AI sẽ dùng gợi ý chung nếu bạn chưa chọn giới tính/độ tuổi.",
+            "success",
           );
         }
       } else {
@@ -837,13 +852,6 @@ if (appRoot) {
     }
 
     const profile = getSelectedProfile();
-    if (!profile.ready) {
-      setDatasetStatus(
-        "Chọn giới tính và nhóm tuổi để AI gợi ý chính xác hơn.",
-        "warning",
-      );
-      return;
-    }
 
     try {
       const response = await fetch(appRoot.dataset.analyzeUrl, {
@@ -853,8 +861,8 @@ if (appRoot) {
         },
         body: JSON.stringify({
           detectedShape: shape,
-          gender: profile.gender,
-          ageGroup: profile.ageGroup,
+          gender: profile.gender || "",
+          ageGroup: profile.ageGroup || "",
           manualMode,
           confidence: state.lastAnalysis?.confidence ?? 0.72,
           faceLengthRatio: state.lastMetrics?.lengthToCheekRatio ?? 0,
@@ -1792,7 +1800,13 @@ if (appRoot) {
     }
 
     dom.cards.innerHTML = "";
-    for (const suggestion of payload.suggestions) {
+
+    const suggestions =
+      Array.isArray(payload?.suggestions) && payload.suggestions.length > 0
+        ? payload.suggestions
+        : getFallbackSuggestions(payload?.faceShape || "Trái xoan");
+
+    for (const suggestion of suggestions) {
       const card = document.createElement("article");
       card.className = "result-card";
       const imageUrl =
@@ -1819,6 +1833,24 @@ if (appRoot) {
     dom.feedbackPanel?.classList.remove("d-none");
     setFeedbackStatus(buildFeedbackPrompt(payload.faceShape));
     dom.results.classList.remove("d-none");
+  }
+
+  function getFallbackSuggestions(faceShape) {
+    const baseStyle = String(faceShape || "Trái xoan").trim() || "Trái xoan";
+
+    return [
+      {
+        styleName: "Classic Side Part",
+        description: `Gợi ý phong cách cân đối cho khuôn mặt ${baseStyle}.`,
+        imageUrl: "https://placehold.co/640x480?text=Salon+Hair",
+      },
+      {
+        styleName: "Soft Texture",
+        description:
+          "Phong cách nhẹ nhàng, dễ chỉnh và phù hợp nhiều dáng mặt.",
+        imageUrl: "https://placehold.co/640x480?text=AI+Suggestion",
+      },
+    ];
   }
 
   function setStatus(message, type) {

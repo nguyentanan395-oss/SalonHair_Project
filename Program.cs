@@ -9,7 +9,10 @@ builder.Services.AddSingleton<AiFeedbackLocalStore>();
 builder.Services.AddSingleton<FaceFeatureExtractor>();
 builder.Services.AddSingleton<AiFeedbackModelTrainer>();
 builder.Services.AddScoped<IEmailService, EmailService>();
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+});
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {

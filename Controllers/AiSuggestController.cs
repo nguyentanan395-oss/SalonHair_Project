@@ -4,6 +4,7 @@ using SalonHair.Models;
 using SalonHair.Services;
 using System.Globalization;
 using System.Text;
+using System.Text.Json;
 
 namespace SalonHair.Controllers
 {
@@ -29,8 +30,21 @@ namespace SalonHair.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Analyze([FromBody] FaceScanAnalysisRequest request)
+        public async Task<IActionResult> Analyze()
         {
+            using var reader = new StreamReader(Request.Body);
+            var rawBody = await reader.ReadToEndAsync();
+
+            if (string.IsNullOrWhiteSpace(rawBody))
+            {
+                return BadRequest(new { message = "Chưa nhận được dữ liệu khuôn mặt để phân tích." });
+            }
+
+            var request = JsonSerializer.Deserialize<FaceScanAnalysisRequest>(rawBody, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
             if (request == null || string.IsNullOrWhiteSpace(request.DetectedShape))
             {
                 return BadRequest(new { message = "Chưa nhận được dữ liệu khuôn mặt để phân tích." });
@@ -45,11 +59,6 @@ namespace SalonHair.Controllers
                 return BadRequest(new { message = "Không xác định được dáng khuôn mặt." });
             }
 
-            if (string.IsNullOrWhiteSpace(normalizedGender) || string.IsNullOrWhiteSpace(normalizedAgeGroup))
-            {
-                return BadRequest(new { message = "Vui lòng chọn giới tính và độ tuổi trước khi phân tích khuôn mặt." });
-            }
-
             var model = await BuildSuggestionViewModelAsync(normalizedShape, request.Confidence, request.ManualMode, normalizedGender, normalizedAgeGroup);
             model.Summary = BuildSummary(normalizedShape, request, request.ManualMode, normalizedGender, normalizedAgeGroup);
 
@@ -57,8 +66,21 @@ namespace SalonHair.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> SaveFeedback([FromBody] AiFeedbackSaveRequest request, CancellationToken cancellationToken)
+        public async Task<IActionResult> SaveFeedback(CancellationToken cancellationToken)
         {
+            using var reader = new StreamReader(Request.Body);
+            var rawBody = await reader.ReadToEndAsync();
+
+            if (string.IsNullOrWhiteSpace(rawBody))
+            {
+                return BadRequest(new { message = "Không có dữ liệu feedback để lưu." });
+            }
+
+            var request = JsonSerializer.Deserialize<AiFeedbackSaveRequest>(rawBody, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
             if (request == null)
             {
                 return BadRequest(new { message = "Không có dữ liệu feedback để lưu." });
@@ -216,7 +238,8 @@ namespace SalonHair.Controllers
             {
                 // Database is optional for this feature. Fallback data is returned below.
             }
-            return (GetFallbackSuggestions(shape, gender), true);
+            var fallbackSuggestions = GetFallbackSuggestions(shape, gender);
+            return (ApplyProfileFilters(fallbackSuggestions, gender, ageGroup), true);
         }
 
         private static List<Hairstyle> TailorSuggestions(List<Hairstyle> suggestions, string? gender, string? ageGroup)
@@ -338,6 +361,11 @@ namespace SalonHair.Controllers
 
                private static string NormalizeStyleKey(string? value)
         {
+            return NormalizeText(value);
+        }
+
+        private static string NormalizeText(string? value)
+        {
             if (string.IsNullOrWhiteSpace(value))
             {
                 return string.Empty;
@@ -372,19 +400,14 @@ namespace SalonHair.Controllers
 
         private static string NormalizeShape(string? shape)
         {
-            if (string.IsNullOrWhiteSpace(shape))
-            {
-                return string.Empty;
-            }
+            var value = NormalizeText(shape);
 
-            var value = shape.Trim().ToLowerInvariant();
-
-            if (value.Contains("tròn") || value.Contains("trã²n") || value.Contains("tron") || value.Contains("round"))
+            if (value.Contains("tron") || value.Contains("round"))
             {
                 return "Tròn";
             }
 
-            if (value.Contains("vuông") || value.Contains("vuã´ng") || value.Contains("vuong") || value.Contains("square"))
+            if (value.Contains("vuong") || value.Contains("square"))
             {
                 return "Vuông";
             }
@@ -394,7 +417,7 @@ namespace SalonHair.Controllers
                 return "Trái xoan";
             }
 
-            if (value.Contains("dài") || value.Contains("dã i") || value.Contains("dai") || value.Contains("long") || value.Contains("oblong"))
+            if (value.Contains("dai") || value.Contains("long") || value.Contains("oblong"))
             {
                 return "Dài";
             }
@@ -404,19 +427,14 @@ namespace SalonHair.Controllers
 
         private static string NormalizeGender(string? value)
         {
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                return string.Empty;
-            }
-
-            var normalized = value.Trim().ToLowerInvariant();
+            var normalized = NormalizeText(value);
 
             if (normalized == "nam" || normalized.Contains("nam"))
             {
                 return "Nam";
             }
 
-            if (normalized == "nu" || normalized == "nữ" || normalized.Contains("nu") || normalized.Contains("nữ"))
+            if (normalized == "nu" || normalized.Contains("nu"))
             {
                 return "Nữ";
             }
@@ -426,29 +444,24 @@ namespace SalonHair.Controllers
 
         private static string NormalizeAgeGroup(string? value)
         {
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                return string.Empty;
-            }
+            var normalized = NormalizeText(value);
 
-            var normalized = value.Trim().ToLowerInvariant();
-
-            if (normalized == "duoi-18" || normalized == "dưới 18" || normalized == "under 18" || normalized == "under18")
+            if (normalized == "duoi 18" || normalized == "under 18" || normalized == "under18")
             {
                 return "Dưới 18";
             }
 
-            if (normalized == "18-30" || normalized == "18 30" || normalized == "18-30 tuổi" || normalized == "18-30" || normalized == "18-30")
+            if (normalized == "18 30" || normalized == "18 30 tuoi")
             {
                 return "18-30";
             }
 
-            if (normalized == "31-45" || normalized == "31 45" || normalized == "31-45 tuổi")
+            if (normalized == "31 45" || normalized == "31 45 tuoi")
             {
                 return "31-45";
             }
 
-            if (normalized == "46+" || normalized == "46 plus" || normalized == "46 trở lên" || normalized == "46up")
+            if (normalized == "46" || normalized == "46 plus" || normalized == "46 tro len" || normalized == "46up")
             {
                 return "46+";
             }
