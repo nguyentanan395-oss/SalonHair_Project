@@ -37,5 +37,13 @@ namespace SalonHair.Models
         // Navigation
         public List<OrderDetail> OrderDetails { get; set; } = new();
         public virtual Payment? Payment { get; set; }
+
+        public double DiscountAmount { get; set; }
+
+        public double FinalAmount { get; set; }
+
+        public int PointsEarned { get; set; }
+
+        public int PointsUsed { get; set; }
     }
 }

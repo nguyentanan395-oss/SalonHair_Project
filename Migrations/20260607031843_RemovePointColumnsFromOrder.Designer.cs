@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SalonHair.Models;
 
@@ -11,9 +12,11 @@ using SalonHair.Models;
 namespace SalonHair.Migrations
 {
     [DbContext(typeof(SalonContext))]
-    partial class SalonContextModelSnapshot : ModelSnapshot
+    [Migration("20260607031843_RemovePointColumnsFromOrder")]
+    partial class RemovePointColumnsFromOrder
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -53,7 +56,7 @@ namespace SalonHair.Migrations
 
                     b.HasIndex("ServiceId");
 
-                    b.ToTable("Bookings", (string)null);
+                    b.ToTable("Bookings");
                 });
 
             modelBuilder.Entity("SalonHair.Models.Customer", b =>
@@ -85,7 +88,7 @@ namespace SalonHair.Migrations
                         .IsUnique()
                         .HasFilter("[UserId] IS NOT NULL");
 
-                    b.ToTable("Customers", (string)null);
+                    b.ToTable("Customers");
                 });
 
             modelBuilder.Entity("SalonHair.Models.Hairstyle", b =>
@@ -117,7 +120,7 @@ namespace SalonHair.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Hairstyles", (string)null);
+                    b.ToTable("Hairstyles");
                 });
 
             modelBuilder.Entity("SalonHair.Models.Order", b =>
@@ -153,7 +156,7 @@ namespace SalonHair.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.ToTable("Orders", (string)null);
+                    b.ToTable("Orders");
                 });
 
             modelBuilder.Entity("SalonHair.Models.OrderDetail", b =>
@@ -182,7 +185,7 @@ namespace SalonHair.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("OrderDetails", (string)null);
+                    b.ToTable("OrderDetails");
                 });
 
             modelBuilder.Entity("SalonHair.Models.Payment", b =>
@@ -234,7 +237,7 @@ namespace SalonHair.Migrations
                         .IsUnique()
                         .HasFilter("[OrderId] IS NOT NULL");
 
-                    b.ToTable("Payments", (string)null);
+                    b.ToTable("Payments");
                 });
 
             modelBuilder.Entity("SalonHair.Models.Product", b =>
@@ -260,7 +263,7 @@ namespace SalonHair.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Products", (string)null);
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("SalonHair.Models.Review", b =>
@@ -307,7 +310,7 @@ namespace SalonHair.Migrations
 
                     b.HasIndex("ServiceId");
 
-                    b.ToTable("Reviews", (string)null);
+                    b.ToTable("Reviews");
                 });
 
             modelBuilder.Entity("SalonHair.Models.Role", b =>
@@ -322,7 +325,7 @@ namespace SalonHair.Migrations
 
                     b.HasKey("RoleId");
 
-                    b.ToTable("Roles", (string)null);
+                    b.ToTable("Roles");
 
                     b.HasData(
                         new
@@ -358,7 +361,7 @@ namespace SalonHair.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Services", (string)null);
+                    b.ToTable("Services");
                 });
 
             modelBuilder.Entity("SalonHair.Models.User", b =>
@@ -403,7 +406,7 @@ namespace SalonHair.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("SalonHair.Models.Booking", b =>

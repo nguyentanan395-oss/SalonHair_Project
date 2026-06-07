@@ -31,6 +31,11 @@ namespace SalonHair.Models
         public List<Booking> Bookings { get; set; } = new();
 
         // 1 Customer -> nhiều Reviews
+     
         public List<Review> Reviews { get; set; } = new();
+
+         public int AccumulatedPoints { get; set; } = 0;
+
+        public int LoyaltyPoints { get; set; } = 0;
     }
 }
