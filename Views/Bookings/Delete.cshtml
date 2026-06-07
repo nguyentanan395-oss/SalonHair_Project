@@ -4,22 +4,126 @@
     ViewData["Title"] = "Hủy lịch hẹn";
 }
 
-<div class="modal-header border-0">
-    <h5 class="modal-title text-danger fw-bold"><i class="bi bi-exclamation-triangle me-2"></i>XÁC NHẬN HỦY LỊCH</h5>
-    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-</div>
-<div class="modal-body p-4 text-center">
-    <p class="text-light mb-4">
-        Bạn có chắc chắn muốn xóa lịch hẹn của khách hàng <br>
-        <strong class="gold-text fs-5">@Model.CustomerName</strong> <br>
-        vào lúc <span class="text-warning">@Model.BookingDate.ToString("HH:mm dd/MM/yyyy")</span>?
-    </p>
-
-    <form asp-action="Delete" id="deleteBookingForm">
-        <input type="hidden" asp-for="Id" />
-        <div class="d-grid gap-2">
-            <button type="submit" class="btn btn-danger fw-bold">XÁC NHẬN XÓA VĨNH VIỄN</button>
-            <a asp-action="Index" class="btn btn-outline-light">QUAY LẠI</a>
+<div class="cancel-page">
+    <div class="cancel-card">
+        <div class="cancel-icon">
+            <i class="bi bi-calendar-x"></i>
         </div>
-    </form>
+
+        <h3>XÁC NHẬN HỦY LỊCH</h3>
+
+        <p>
+            Bạn có chắc chắn muốn hủy lịch hẹn của khách hàng
+            <br />
+            <strong>@Model.CustomerName</strong>
+            <br />
+            vào lúc
+            <span>@Model.BookingDate.ToString("HH:mm dd/MM/yyyy")</span>
+            không?
+        </p>
+
+        <form asp-action="Delete" method="post">
+            <input type="hidden" asp-for="Id" />
+
+            <div class="cancel-actions">
+                <button type="submit" class="btn-cancel">
+                    <i class="bi bi-x-circle me-1"></i>
+                    XÁC NHẬN HỦY LỊCH
+                </button>
+
+                <a asp-action="Index" class="btn-back">
+                    <i class="bi bi-arrow-left-circle me-1"></i>
+                    QUAY LẠI
+                </a>
+            </div>
+        </form>
+    </div>
 </div>
+
+<style>
+    body {
+        background: #080808 !important;
+    }
+
+    .cancel-page {
+        min-height: calc(100vh - 80px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 15px;
+    }
+
+    .cancel-card {
+        width: 100%;
+        max-width: 520px;
+        padding: 38px 35px;
+        text-align: center;
+        border-radius: 24px;
+        background: linear-gradient(145deg, #111, #1f1f1f);
+        border: 1px solid rgba(212, 175, 55, 0.45);
+        box-shadow: 0 25px 60px rgba(0,0,0,0.65);
+        color: #fff;
+    }
+
+    .cancel-icon {
+        width: 82px;
+        height: 82px;
+        margin: 0 auto 22px;
+        border-radius: 50%;
+        background: rgba(220, 53, 69, 0.15);
+        color: #dc3545;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 38px;
+        border: 1px solid rgba(220, 53, 69, 0.45);
+    }
+
+    .cancel-card h3 {
+        color: #d4af37;
+        font-weight: 800;
+        margin-bottom: 18px;
+    }
+
+    .cancel-card p {
+        color: #ddd;
+        line-height: 1.7;
+        margin-bottom: 28px;
+    }
+
+    .cancel-card strong {
+        color: #d4af37;
+        font-size: 22px;
+    }
+
+    .cancel-card span {
+        color: #ffc107;
+        font-weight: 700;
+    }
+
+    .cancel-actions {
+        display: grid;
+        gap: 12px;
+    }
+
+    .btn-cancel,
+    .btn-back {
+        width: 100%;
+        padding: 13px;
+        border-radius: 30px;
+        font-weight: 800;
+        text-decoration: none;
+        border: none;
+    }
+
+    .btn-cancel {
+        background: linear-gradient(135deg, #dc3545, #ff5c6c);
+        color: white;
+    }
+
+    .btn-back {
+        background: transparent;
+        color: #d4af37;
+        border: 1px solid #d4af37;
+    }
+</style>

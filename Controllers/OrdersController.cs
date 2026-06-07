@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SalonHair.Models;
-using SalonHair.Models.SalonHair.Models;
+using SalonHair.Models;
 
 namespace SalonHair.Controllers
 {
@@ -40,11 +40,34 @@ namespace SalonHair.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var order = await _context.Orders.FindAsync(id);
-            if (order != null)
+
+            if (order == null)
             {
-                _context.Orders.Remove(order);
-                await _context.SaveChangesAsync();
+                return NotFound();
             }
+
+            var payments = await _context.Payments
+                .Where(p => p.OrderId == id)
+                .ToListAsync();
+
+            if (payments.Any())
+            {
+                _context.Payments.RemoveRange(payments);
+            }
+
+            var orderDetails = await _context.OrderDetails
+                .Where(od => od.OrderId == id)
+                .ToListAsync();
+
+            if (orderDetails.Any())
+            {
+                _context.OrderDetails.RemoveRange(orderDetails);
+            }
+
+            _context.Orders.Remove(order);
+
+            await _context.SaveChangesAsync();
+
             return RedirectToAction(nameof(Index));
         }
     }

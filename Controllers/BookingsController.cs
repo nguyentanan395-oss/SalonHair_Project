@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SalonHair.Models;
-using SalonHair.Models.SalonHair.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -159,21 +158,79 @@ namespace SalonHair.Controllers
         [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
-        {
+{
             var booking = await _context.Bookings.FindAsync(id);
 
-            if (booking != null)
+            if (booking == null)
             {
-                _context.Bookings.Remove(booking);
+                return NotFound();
             }
 
+            var payments = await _context.Payments
+                .Where(p => p.BookingId == id)
+                .ToListAsync();
+
+            if (payments.Any())
+            {
+                _context.Payments.RemoveRange(payments);
+            }
+
+            _context.Bookings.Remove(booking);
             await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Hủy lịch hẹn thành công.";
             return RedirectToAction(nameof(Index));
         }
 
         private bool BookingExists(int id)
         {
             return _context.Bookings.Any(e => e.Id == id);
+        }
+
+        private async Task<Customer?> GetCurrentCustomerAsync(string? phone = null)
+        {
+            if (User.Identity?.IsAuthenticated != true)
+            {
+                return null;
+            }
+
+            var userName = User.Identity?.Name;
+            if (string.IsNullOrWhiteSpace(userName))
+            {
+                return null;
+            }
+
+            var user = await _context.Users
+                .Include(u => u.Customer)
+                .FirstOrDefaultAsync(u => u.Username == userName);
+
+            if (user == null)
+            {
+                return null;
+            }
+
+            if (user.Customer != null)
+            {
+                var customer = user.Customer;
+                if (!string.IsNullOrWhiteSpace(phone) && string.IsNullOrWhiteSpace(customer.Phone))
+                {
+                    customer.Phone = phone;
+                    await _context.SaveChangesAsync();
+                }
+                return customer;
+            }
+
+            var createdCustomer = new Customer
+            {
+                UserId = user.Id,
+                Name = user.Username,
+                Email = user.Email,
+                Phone = phone ?? string.Empty
+            };
+
+            _context.Customers.Add(createdCustomer);
+            await _context.SaveChangesAsync();
+            return createdCustomer;
         }
 
         // 1. Trang hiển thị Form cho khách nhập (GET)
@@ -193,11 +250,20 @@ namespace SalonHair.Controllers
         {
             if (ModelState.IsValid)
             {
+                var currentCustomer = await GetCurrentCustomerAsync(booking.Phone);
+                if (currentCustomer != null)
+                {
+                    booking.CustomerId = currentCustomer.Id;
+                    booking.CustomerName = string.IsNullOrWhiteSpace(booking.CustomerName)
+                        ? currentCustomer.Name
+                        : booking.CustomerName;
+                }
+
                 _context.Add(booking);
                 await _context.SaveChangesAsync();
                 HttpContext.Session.SetString("LastPhone", booking.Phone);
                 TempData["SuccessMessage"] = "Lịch hẹn của bạn đã được ghi nhận. Salon sẽ sớm liên hệ để xác nhận.";
-                return RedirectToAction("History", new { phone = booking.Phone });
+                return RedirectToAction("History");
             }
             ViewData["ServiceId"] = new SelectList(_context.Services, "Id", "ServiceName", booking.ServiceId);
             return View(booking);
@@ -205,12 +271,41 @@ namespace SalonHair.Controllers
 
         // 3. Trang lịch sử dành cho khách (GET)
         [AllowAnonymous]
-        public async Task<IActionResult> History(string phone)
+        public async Task<IActionResult> History(string? phone)
         {
-            // Nếu là Admin thì không cần xem lịch sử cá nhân, chuyển về trang quản lý chung
             if (User.IsInRole("Admin"))
             {
                 return RedirectToAction(nameof(Index));
+            }
+
+            ViewBag.IsAuthenticated = User.Identity?.IsAuthenticated == true;
+            ViewBag.UserName = User.Identity?.Name;
+
+            if (ViewBag.IsAuthenticated)
+            {
+                var user = await _context.Users
+                    .Include(u => u.Customer)
+                    .FirstOrDefaultAsync(u => u.Username == User.Identity!.Name);
+
+                if (user?.Customer == null)
+                {
+                    return View(Array.Empty<Booking>());
+                }
+
+                var bookings = await _context.Bookings
+                    .Include(b => b.Service)
+                    .Where(b => b.CustomerId == user.Customer.Id)
+                    .OrderByDescending(b => b.BookingDate)
+                    .ToListAsync();
+
+                var orders = await _context.Orders
+                    .Where(o => o.CustomerId == user.Customer.Id)
+                    .OrderByDescending(o => o.OrderDate)
+                    .ToListAsync();
+
+                ViewBag.Orders = orders;
+                ViewBag.Phone = user.Customer.Phone;
+                return View(bookings);
             }
 
             if (string.IsNullOrEmpty(phone))
@@ -220,26 +315,24 @@ namespace SalonHair.Controllers
 
             if (string.IsNullOrEmpty(phone))
             {
-                return View(); // Trả về view trống để khách nhập số điện thoại
+                return View();
             }
 
-            // Lưu lại vào session nếu khách tự nhập tìm kiếm
             HttpContext.Session.SetString("LastPhone", phone);
-
             ViewBag.Phone = phone;
-            var bookings = await _context.Bookings
+            var guestBookings = await _context.Bookings
                 .Include(b => b.Service)
                 .Where(b => b.Phone == phone)
                 .OrderByDescending(b => b.BookingDate)
                 .ToListAsync();
 
-            var orders = await _context.Orders
+            var guestOrders = await _context.Orders
                 .Where(o => o.Phone == phone)
                 .OrderByDescending(o => o.OrderDate)
                 .ToListAsync();
 
-            ViewBag.Orders = orders;
-            return View(bookings);
+            ViewBag.Orders = guestOrders;
+            return View(guestBookings);
         }
 
         // 4. Trang thống kê tổng quan hệ thống (Dashboard) dành cho Admin

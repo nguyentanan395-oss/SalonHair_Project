@@ -1,4 +1,4 @@
-﻿﻿import vision from "/vendor/mediapipe/vision_bundle.js";
+import vision from "/vendor/mediapipe/vision_bundle.js";
 
 const { FaceLandmarker, FilesetResolver, DrawingUtils } = vision;
 
@@ -17,6 +17,9 @@ if (appRoot) {
     resetButton: document.getElementById("resetAnalysisButton"),
     startCameraButton: document.getElementById("startCameraButton"),
     stopCameraButton: document.getElementById("stopCameraButton"),
+    genderSelect: document.getElementById("genderSelect"),
+    ageGroupSelect: document.getElementById("ageGroupSelect"),
+    profileHint: document.getElementById("profileHint"),
     video: document.getElementById("webcamVideo"),
     canvas: document.getElementById("facePreviewCanvas"),
     emptyState: document.getElementById("scanEmptyState"),
@@ -70,9 +73,12 @@ if (appRoot) {
     lastLandmarksJson: "",
     queuedAnalysisRequest: null,
     runtimeModel: null,
+    selectedGender: "",
+    selectedAgeGroup: "",
     clientSessionId: getClientSessionId(),
     analysisSequence: 0,
     activeAnalysisToken: 0,
+    lastCorrectedShape: "",
     batch: {
       active: false,
       files: [],
@@ -100,6 +106,7 @@ if (appRoot) {
   bindEvents();
   initializeFeedbackButtonLabels();
   updateBatchUi();
+  updateAnalysisControls();
   boot();
 
   async function boot() {
@@ -107,6 +114,13 @@ if (appRoot) {
       "Đang tải mô hình AI lần đầu. Nếu mạng chậm có thể mất 10-15 giây...",
       "loading",
     );
+
+    try {
+      if (typeof faceapi !== 'undefined') {
+        await faceapi.nets.tinyFaceDetector.loadFromUri('/vendor/face-api/models');
+        await faceapi.nets.ageGenderNet.loadFromUri('/vendor/face-api/models');
+      }
+    } catch(e) { console.error("Error loading faceapi", e); }
 
     try {
       const filesetResolver = await withTimeout(
@@ -124,6 +138,9 @@ if (appRoot) {
             },
             runningMode: "IMAGE",
             numFaces: 1,
+            minFaceDetectionConfidence: 0.5,
+            minFacePresenceConfidence: 0.5,
+            minTrackingConfidence: 0.65,
           }),
           MODEL_LOAD_TIMEOUT_MS,
           "Timeout while loading GPU face landmarker.",
@@ -137,6 +154,9 @@ if (appRoot) {
             },
             runningMode: "IMAGE",
             numFaces: 1,
+            minFaceDetectionConfidence: 0.5,
+            minFacePresenceConfidence: 0.5,
+            minTrackingConfidence: 0.65,
           }),
           MODEL_LOAD_TIMEOUT_MS,
           "Timeout while loading CPU face landmarker.",
@@ -147,7 +167,7 @@ if (appRoot) {
         "AI đã sẵn sàng. Bạn có thể mở webcam trực tiếp hoặc tải ảnh chân dung.",
         "ready",
       );
-      dom.startCameraButton.disabled = false;
+      updateAnalysisControls();
       updateBatchUi();
       await loadRuntimeModel();
     } catch (error) {
@@ -166,6 +186,11 @@ if (appRoot) {
     dom.resetButton?.addEventListener("click", resetAnalysis);
     dom.startCameraButton?.addEventListener("click", startCamera);
     dom.stopCameraButton?.addEventListener("click", stopCamera);
+    dom.genderSelect?.addEventListener("change", handleProfileSelectionChange);
+    dom.ageGroupSelect?.addEventListener(
+      "change",
+      handleProfileSelectionChange,
+    );
     dom.feedbackAcceptButton?.addEventListener("click", () => {
       if (state.lastAnalysis) {
         saveFeedback(state.lastAnalysis.shape);
@@ -205,13 +230,21 @@ if (appRoot) {
       return;
     }
 
+    const profile = getSelectedProfile();
+    if (!profile.ready) {
+      setStatus(
+        "Webcam đã mở. Chọn giới tính và nhóm tuổi để AI gợi ý kiểu tóc chính xác hơn.",
+        "loading",
+      );
+    }
+
     if (!navigator.mediaDevices?.getUserMedia) {
       setStatus("Trình duyệt này không hỗ trợ webcam realtime.", "error");
       return;
     }
 
     stopBatchSession({ silent: true });
-    stopCamera();
+    cleanupCamera(); // Dọn dẹp trực tiếp trước khi khởi tạo stream mới
     clearImageState();
 
     try {
@@ -235,17 +268,16 @@ if (appRoot) {
       dom.video.classList.add("is-mirrored");
       dom.canvas.classList.add("is-mirrored");
       dom.emptyState.classList.add("d-none");
-      dom.uploadHint.textContent =
-        "Webcam đang chạy realtime. Hãy giữ khuôn mặt chính diện để AI nhận diện ổn định hơn.";
+      if (dom.uploadHint)
+        dom.uploadHint.textContent =
+          "Webcam đang chạy realtime. Hãy giữ khuôn mặt chính diện.";
+
       dom.startCameraButton.disabled = true;
       dom.stopCameraButton.disabled = false;
       dom.analyzeButton.disabled = true;
 
       await dom.video.play();
-      setStatus(
-        "Webcam đã mở. AI đang quét khuôn mặt theo thời gian thực...",
-        "ready",
-      );
+      setStatus("Webcam đã mở. AI đang quét khuôn mặt...", "ready");
 
       if (state.rafId) {
         cancelAnimationFrame(state.rafId);
@@ -267,6 +299,7 @@ if (appRoot) {
     cleanupCamera();
 
     if (!state.image) {
+      dom.video.classList.add("is-hidden");
       dom.emptyState.classList.remove("d-none");
       dom.uploadHint.textContent =
         "Bấm mở webcam để quét trực tiếp, hoặc tải ảnh chân dung một người nếu cần tư vấn thủ công.";
@@ -297,7 +330,7 @@ if (appRoot) {
     dom.video.classList.add("is-hidden");
     dom.video.classList.remove("is-mirrored");
     dom.canvas.classList.remove("is-mirrored");
-    dom.startCameraButton.disabled = !state.faceLandmarker;
+    updateAnalysisControls();
     dom.stopCameraButton.disabled = true;
   }
 
@@ -316,6 +349,7 @@ if (appRoot) {
           `${file.name} | ${image.naturalWidth} x ${image.naturalHeight}`,
         enableAnalyzeButton: true,
       });
+      updateAnalysisControls();
       setStatus(
         "Ảnh đã sẵn sàng. Bấm phân tích để nhận gợi ý kiểu tóc.",
         "ready",
@@ -355,7 +389,7 @@ if (appRoot) {
       const detection = state.faceLandmarker.detect(state.image);
       await handleDetectionResult(detection, "image");
     } catch (error) {
-      console.error(error);
+      console.error("Analysis Error:", error);
       setStatus(
         "Không thể phân tích ảnh này. Hãy thử ảnh sáng và rõ mặt hơn.",
         "error",
@@ -383,7 +417,7 @@ if (appRoot) {
           dom.video,
           nowInMs,
         );
-        handleDetectionResult(detection, "video");
+        await handleDetectionResult(detection, "video");
         state.lastVideoTime = dom.video.currentTime;
       } catch (error) {
         console.error(error);
@@ -457,6 +491,41 @@ if (appRoot) {
       );
     }
 
+    if (typeof faceapi !== 'undefined') {
+        try {
+            const media = source === "video" ? dom.video : state.image;
+            const now = Date.now();
+            if (media && (!state.selectedGender || now - (state.lastFaceApiAt || 0) > 3000)) {
+                state.lastFaceApiAt = now;
+                const runFaceApi = async () => {
+                    const faceResult = await faceapi.detectSingleFace(media, new faceapi.TinyFaceDetectorOptions()).withAgeAndGender();
+                    if (faceResult) {
+                        const gender = faceResult.gender === 'male' ? 'Nam' : 'Nữ';
+                        let ageGroup = '';
+                        if (faceResult.age < 18) ageGroup = 'Dưới 18';
+                        else if (faceResult.age <= 30) ageGroup = '18-30';
+                        else if (faceResult.age <= 45) ageGroup = '31-45';
+                        else ageGroup = '46+';
+                        
+                        if (dom.genderSelect.value !== gender || dom.ageGroupSelect.value !== ageGroup) {
+                            dom.genderSelect.value = gender;
+                            dom.ageGroupSelect.value = ageGroup;
+                            state.selectedGender = gender;
+                            state.selectedAgeGroup = ageGroup;
+                            dom.genderSelect.dispatchEvent(new Event('change'));
+                            dom.profileHint.textContent = `AI tự động nhận diện: ${gender}, khoảng ${Math.round(faceResult.age)} tuổi.`;
+                        }
+                    }
+                };
+                if (source === "video") {
+                    runFaceApi();
+                } else {
+                    await runFaceApi();
+                }
+            }
+        } catch(e) { console.error("Face-api detection error:", e); }
+    }
+
     return maybeSendAnalysis(analysis, metrics, source, analysisToken);
   }
 
@@ -464,6 +533,16 @@ if (appRoot) {
     const now = Date.now();
     const forceFreshSuggestion =
       isStillImageSource(source) || dom.results.classList.contains("d-none");
+    const profile = getSelectedProfile();
+
+    if (!profile.ready) {
+      setStatus(
+        "Chưa chọn giới tính/độ tuổi. AI vẫn nhận diện khuôn mặt nhưng chưa gợi ý kiểu tóc.",
+        "loading",
+      );
+      return;
+    }
+
     if (state.isSending) {
       if (forceFreshSuggestion) {
         state.queuedAnalysisRequest = {
@@ -495,6 +574,8 @@ if (appRoot) {
         },
         body: JSON.stringify({
           detectedShape: analysis.shape,
+          gender: profile.gender,
+          ageGroup: profile.ageGroup,
           confidence: analysis.confidence,
           faceLengthRatio: metrics.lengthToCheekRatio,
           foreheadWidthRatio: metrics.foreheadToCheekRatio,
@@ -569,6 +650,17 @@ if (appRoot) {
         "success",
       );
 
+      if (state.lastAnalysis) {
+        state.lastAnalysis.shape = correctedShape;
+        state.lastCorrectedShape = correctedShape;
+        dom.metricShape.textContent = correctedShape;
+      }
+
+      const profile = getSelectedProfile();
+      if (profile.ready && state.lastAnalysis) {
+        await refreshSuggestionsForShape(correctedShape, true);
+      }
+
       if (state.batch.active) {
         state.batch.labeledCount += 1;
         state.batch.index += 1;
@@ -594,6 +686,8 @@ if (appRoot) {
   }
 
   async function postCurrentFeedbackSample(correctedShape) {
+    const profile = getSelectedProfile();
+
     const response = await fetch(appRoot.dataset.feedbackUrl, {
       method: "POST",
       headers: {
@@ -602,6 +696,8 @@ if (appRoot) {
       body: JSON.stringify({
         predictedShape: state.lastAnalysis.shape,
         correctedShape,
+        gender: profile.gender,
+        ageGroup: profile.ageGroup,
         confidence: state.lastAnalysis.confidence,
         faceLengthRatio: state.lastMetrics.lengthToCheekRatio,
         foreheadWidthRatio: state.lastMetrics.foreheadToCheekRatio,
@@ -700,6 +796,27 @@ if (appRoot) {
           "success",
         );
         setFeedbackStatus("AI đã nạp model mới từ dataset local.", "success");
+
+        const profile = getSelectedProfile();
+        const manualShape =
+          state.lastCorrectedShape || state.lastAnalysis?.shape;
+
+        if (manualShape && profile.ready) {
+          setStatus(
+            `Đang cập nhật gợi ý cho khuôn mặt ${manualShape}...`,
+            "loading",
+          );
+          await refreshSuggestionsForShape(manualShape, true);
+          setStatus(
+            `AI đã chuyển sang gợi ý theo khuôn mặt ${manualShape}.`,
+            "success",
+          );
+        } else if (!profile.ready) {
+          setDatasetStatus(
+            "Vui lòng chọn giới tính và độ tuổi để nhận gợi ý sau khi train.",
+            "warning",
+          );
+        }
       } else {
         setDatasetStatus(payload.message, "error");
       }
@@ -711,6 +828,57 @@ if (appRoot) {
       );
     } finally {
       dom.trainModelButton.disabled = false;
+    }
+  }
+
+  async function refreshSuggestionsForShape(shape, manualMode = false) {
+    if (!shape) {
+      return;
+    }
+
+    const profile = getSelectedProfile();
+    if (!profile.ready) {
+      setDatasetStatus(
+        "Chọn giới tính và nhóm tuổi để AI gợi ý chính xác hơn.",
+        "warning",
+      );
+      return;
+    }
+
+    try {
+      const response = await fetch(appRoot.dataset.analyzeUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          detectedShape: shape,
+          gender: profile.gender,
+          ageGroup: profile.ageGroup,
+          manualMode,
+          confidence: state.lastAnalysis?.confidence ?? 0.72,
+          faceLengthRatio: state.lastMetrics?.lengthToCheekRatio ?? 0,
+          foreheadWidthRatio: state.lastMetrics?.foreheadToCheekRatio ?? 0,
+          jawWidthRatio: state.lastMetrics?.jawToCheekRatio ?? 0,
+          foreheadJawDelta: state.lastMetrics?.foreheadJawDelta ?? 0,
+        }),
+      });
+
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload.message || "Không lấy được gợi ý từ server.");
+      }
+
+      renderSuggestions(payload);
+      dom.metricShape.textContent = shape;
+      state.lastSentShape = shape;
+      state.lastSentAt = Date.now();
+    } catch (error) {
+      console.error(error);
+      setDatasetStatus(
+        "Không thể làm mới gợi ý sau khi train. Hãy thử lại.",
+        "error",
+      );
     }
   }
 
@@ -913,6 +1081,7 @@ if (appRoot) {
     state.lastSentShape = "";
     state.lastSentAt = 0;
     clearFeedbackState();
+    updateAnalysisControls();
     setStatus(
       "Đã làm mới vùng quét. Bạn có thể mở webcam hoặc chọn ảnh khác.",
       "ready",
@@ -922,7 +1091,7 @@ if (appRoot) {
   function clearImageState() {
     state.image = null;
     dom.fileInput.value = "";
-    dom.analyzeButton.disabled = true;
+    updateAnalysisControls();
     clearFeedbackState();
 
     if (state.objectUrl) {
@@ -958,6 +1127,7 @@ if (appRoot) {
         dom.emptyState.classList.add("d-none");
         dom.uploadHint.textContent = hintTextFactory(image);
         drawImageToCanvas();
+        updateAnalysisControls();
         dom.analyzeButton.disabled =
           !enableAnalyzeButton || !state.faceLandmarker;
         resolve(image);
@@ -1254,6 +1424,7 @@ if (appRoot) {
   function clearFeedbackState() {
     state.lastAnalysis = null;
     state.lastMetrics = null;
+    state.lastCorrectedShape = "";
     state.lastDetectionSource = "";
     state.lastLandmarksJson = "";
     state.queuedAnalysisRequest = null;
@@ -1415,6 +1586,137 @@ if (appRoot) {
     );
   }
 
+  function handleProfileSelectionChange() {
+    state.selectedGender = normalizeGenderValue(dom.genderSelect?.value || "");
+    state.selectedAgeGroup = normalizeAgeValue(dom.ageGroupSelect?.value || "");
+    updateAnalysisControls();
+    updateManualFallbackLinks();
+    updateProfileHint();
+
+    if (!isProfileSelectionReady()) {
+      setStatus(
+        "Vui lòng chọn giới tính và nhóm tuổi để AI tối ưu gợi ý.",
+        "error",
+      );
+      return;
+    }
+
+    setStatus(
+      "Thông tin hồ sơ đã cập nhật. Bạn có thể tiếp tục phân tích.",
+      "ready",
+    );
+  }
+
+  function getSelectedProfile() {
+    const ready = isProfileSelectionReady();
+
+    return {
+      gender: state.selectedGender,
+      ageGroup: state.selectedAgeGroup,
+      ready,
+    };
+  }
+
+  function isProfileSelectionReady() {
+    return Boolean(state.selectedGender && state.selectedAgeGroup);
+  }
+
+  function updateAnalysisControls() {
+    const profileReady = isProfileSelectionReady();
+
+    if (dom.analyzeButton) {
+      dom.analyzeButton.disabled = !state.faceLandmarker || !state.image;
+    }
+
+    if (dom.startCameraButton) {
+      dom.startCameraButton.disabled =
+        !state.faceLandmarker || state.isCameraRunning;
+    }
+  }
+
+  function updateProfileHint() {
+    if (!dom.profileHint) {
+      return;
+    }
+
+    dom.profileHint.textContent = isProfileSelectionReady()
+      ? `AI sẽ dùng hồ sơ ${state.selectedGender} • ${state.selectedAgeGroup} để điều chỉnh gợi ý.`
+      : "Vui lòng chọn giới tính và nhóm tuổi trước khi phân tích để AI tối ưu gợi ý.";
+  }
+
+  function updateManualFallbackLinks() {
+    const profile = getSelectedProfile();
+
+    document.querySelectorAll(".manual-shape-link").forEach((link) => {
+      const shape = link.dataset.shape || "";
+      const query = new URLSearchParams({
+        shape,
+        gender: profile.gender,
+        ageGroup: profile.ageGroup,
+      });
+      link.href = `${appRoot.dataset.analyzeUrl.replace("/Analyze", "/Result")}?${query.toString()}`;
+    });
+  }
+
+  function formatProfileSummary(gender, ageGroup) {
+    const validGender = normalizeGenderValue(gender || "");
+    const validAgeGroup = normalizeAgeValue(ageGroup || "");
+
+    if (!validGender || !validAgeGroup) {
+      return "Chưa chọn giới tính/độ tuổi";
+    }
+
+    return `Hồ sơ: ${validGender} • ${validAgeGroup}`;
+  }
+
+  function normalizeGenderValue(value) {
+    const normalized = String(value || "")
+      .trim()
+      .toLowerCase();
+
+    if (normalized === "nam") {
+      return "Nam";
+    }
+
+    if (normalized === "nữ" || normalized === "nu") {
+      return "Nữ";
+    }
+
+    return "";
+  }
+
+  function normalizeAgeValue(value) {
+    const normalized = String(value || "")
+      .trim()
+      .toLowerCase();
+
+    if (
+      normalized === "dưới 18" ||
+      normalized === "duoi 18" ||
+      normalized === "under 18"
+    ) {
+      return "Dưới 18";
+    }
+
+    if (normalized === "18-30" || normalized === "18 30") {
+      return "18-30";
+    }
+
+    if (normalized === "31-45" || normalized === "31 45") {
+      return "31-45";
+    }
+
+    if (
+      normalized === "46+" ||
+      normalized === "46" ||
+      normalized === "46 trở lên"
+    ) {
+      return "46+";
+    }
+
+    return "";
+  }
+
   function captureSnapshotDataUrl() {
     if (state.image) {
       const snapshotCanvas = document.createElement("canvas");
@@ -1480,7 +1782,7 @@ if (appRoot) {
     dom.resultTitle.textContent = `AI gợi ý kiểu tóc cho khuôn mặt ${payload.faceShape}`;
     dom.resultSummary.textContent = payload.summary;
     dom.resultConfidence.textContent = `Độ tự tin: ${formatPercent(payload.confidence)}`;
-    dom.resultMeta.textContent = payload.confidenceLabel;
+    dom.resultMeta.textContent = `${payload.confidenceLabel} • ${formatProfileSummary(payload.gender, payload.ageGroup)}`;
 
     dom.tips.innerHTML = "";
     for (const tip of payload.stylingTips) {
@@ -1493,13 +1795,15 @@ if (appRoot) {
     for (const suggestion of payload.suggestions) {
       const card = document.createElement("article");
       card.className = "result-card";
+      const imageUrl =
+        normalizeImageUrl(suggestion.imageUrl) ||
+        "https://placehold.co/640x480?text=Salon+Hair";
       card.innerHTML = `
-                <img class="result-card__image" src="${escapeHtml(suggestion.imageUrl || "https://placehold.co/640x480?text=Salon+Hair")}" alt="${escapeHtml(suggestion.styleName)}" onerror="this.onerror=null;this.src='https://placehold.co/640x480?text=Salon+Hair';">
+                <img class="result-card__image" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(suggestion.styleName)}" onerror="this.onerror=null;this.src='https://placehold.co/640x480?text=Salon+Hair';">
                 <div class="result-card__body">
                     <span class="result-card__shape">Hợp với ${escapeHtml(payload.faceShape)}</span>
                     <h3>${escapeHtml(suggestion.styleName)}</h3>
                     <p>${escapeHtml(suggestion.description || "")}</p>
-                    <a class="btn btn-warning w-100 mt-3" href="${escapeHtml(appRoot.dataset.bookingUrl)}"><i class="bi bi-calendar-plus me-2"></i>Đặt lịch kiểu này</a>
                 </div>`;
       dom.cards.appendChild(card);
     }
@@ -1576,10 +1880,12 @@ if (appRoot) {
     return state.runtimeModel?.modelVersion || "rule-v1-local-feedback";
   }
 
-  function normalizeShapeLabelLegacy(value) {
+  function normalizeShapeLabel(value) {
     const normalized = String(value || "")
       .trim()
       .toLowerCase();
+
+    if (!normalized) return "Trái xoan";
 
     if (
       normalized.includes("tron") ||
@@ -1616,41 +1922,28 @@ if (appRoot) {
     return "Trái xoan";
   }
 
-  function normalizeShapeLabel(value) {
-    const normalized = String(value || "")
-      .trim()
-      .toLowerCase();
+  function normalizeImageUrl(imageUrl) {
+    if (!imageUrl) {
+      return null;
+    }
 
-    if (
-      normalized.includes("tron") ||
-      normalized.includes("tròn") ||
-      normalized.includes("round")
-    ) {
-      return "Tròn";
+    let normalized = String(imageUrl).trim();
+    if (!normalized) {
+      return null;
+    }
+
+    if (normalized.startsWith("~/")) {
+      normalized = normalized.replace(/^~\//, "/");
     }
 
     if (
-      normalized.includes("vuong") ||
-      normalized.includes("vuông") ||
-      normalized.includes("square")
+      !/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(normalized) &&
+      !normalized.startsWith("/")
     ) {
-      return "Vuông";
+      normalized = "/" + normalized;
     }
 
-    if (normalized.includes("xoan") || normalized.includes("oval")) {
-      return "Trái xoan";
-    }
-
-    if (
-      normalized.includes("dai") ||
-      normalized.includes("dài") ||
-      normalized.includes("long") ||
-      normalized.includes("oblong")
-    ) {
-      return "Dài";
-    }
-
-    return "Trái xoan";
+    return normalized;
   }
 
   function withTimeout(promise, timeoutMs, errorMessage) {

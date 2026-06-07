@@ -1,0 +1,44 @@
+@{
+    ViewData["Title"] = "Thanh toán QR Banking";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-header bg-dark text-white text-center py-3">
+                    <h4 class="mb-0">Thanh toán bằng mã QR</h4>
+                </div>
+                <div class="card-body text-center p-4">
+                    <div class="mb-4">
+                        <img src="~/images/banking-qr.png" alt="QR Code" class="img-thumbnail shadow-sm p-3" style="max-width: 250px; border-radius: 15px;" />
+                    </div>
+
+                    <div class="alert alert-info rounded-3">
+                        Mã đơn hàng (Nội dung chuyển khoản):<br />
+                        <strong>SALON_@ViewBag.BookingId</strong>
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <h5 class="mb-3">Tải lên biên lai chuyển khoản</h5>
+                    <p class="text-muted small">Vui lòng chụp ảnh màn hình giao dịch thành công và tải lên đây để nhân viên xác nhận nhanh chóng.</p>
+
+                    <form asp-action="UploadProof" asp-controller="Payment" method="post" enctype="multipart/form-data">
+                        <input type="hidden" name="bookingId" value="@ViewBag.BookingId" />
+
+                        <div class="mb-3 text-start">
+                            <input type="file" name="imageFile" class="form-control" accept="image/*" required />
+                        </div>
+
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-cloud-upload me-2"></i> Gửi biên lai
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

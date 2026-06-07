@@ -1,62 +1,344 @@
 @model SalonHair.Models.Product
 
 @{
-    ViewData["Title"] = "Thêm Sản Phẩm Mới";
+ViewData["Title"] = "Thêm Sản Phẩm Mới";
 }
 
-<div class="row">
-    <div class="col-md-8 offset-md-2">
-        <div class="card bg-dark border-gold-card text-light shadow-lg">
-            <div class="card-header border-bottom border-warning py-3">
-                <h4 class="mb-0 text-warning fw-bold"><i class="bi bi-plus-square me-2"></i>Thêm Sản Phẩm Mới</h4>
-            </div>
-            <div class="card-body p-4">
-                <form asp-action="Create" enctype="multipart/form-data">
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                    
-                    <div class="mb-3">
-                        <label asp-for="Name" class="form-label text-warning fw-bold"></label>
-                        <input asp-for="Name" class="form-control bg-secondary text-light border-0" />
-                        <span asp-validation-for="Name" class="text-danger"></span>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label asp-for="Price" class="form-label text-warning fw-bold"></label>
-                        <input asp-for="Price" type="number" step="1000" class="form-control bg-secondary text-light border-0" />
-                        <span asp-validation-for="Price" class="text-danger"></span>
-                    </div>
+<div class="product-create-page">
+    <div class="product-form-card">
 
-                    <div class="mb-3">
-                        <label class="form-label text-warning fw-bold">Tải ảnh lên từ máy tính (Tùy chọn)</label>
-                        <input type="file" name="imageFile" class="form-control bg-secondary text-light border-0" accept="image/*" />
-                    </div>
+```
+    <div class="form-header">
+        <div class="header-icon">
+            <i class="bi bi-bag-plus-fill"></i>
+        </div>
 
-                    <div class="mb-3">
-                        <label asp-for="ImageUrl" class="form-label text-warning fw-bold">Hoặc dán Link Ảnh (Url)</label>
-                        <input asp-for="ImageUrl" class="form-control bg-secondary text-light border-0" placeholder="Ví dụ: /images/wax1.jpg hoặc https://..." />
-                        <span asp-validation-for="ImageUrl" class="text-danger"></span>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <label asp-for="Description" class="form-label text-warning fw-bold"></label>
-                        <textarea asp-for="Description" class="form-control bg-secondary text-light border-0" rows="4"></textarea>
-                        <span asp-validation-for="Description" class="text-danger"></span>
-                    </div>
-                    
-                    <div class="d-grid gap-2">
-                        <input type="submit" value="Lưu Sản Phẩm" class="btn btn-warning fw-bold" />
-                        <a asp-action="Manage" class="btn btn-outline-light">Hủy bỏ</a>
-                    </div>
-                </form>
-            </div>
+        <div>
+            <h2>Thêm Sản Phẩm Mới</h2>
+            <p>Quản lý sản phẩm chăm sóc tóc, mỹ phẩm và phụ kiện salon</p>
         </div>
     </div>
+
+    <form asp-action="Create" enctype="multipart/form-data">
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <div class="form-grid">
+            <div class="form-section">
+                <h5><i class="bi bi-info-circle me-2"></i>Thông tin sản phẩm</h5>
+
+                <div class="mb-3">
+                    <label asp-for="Name" class="form-label">Tên sản phẩm</label>
+                    <input asp-for="Name"
+                           class="form-control luxury-input"
+                           placeholder="Ví dụ: Sáp vuốt tóc cao cấp..." />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Price" class="form-label">Giá bán</label>
+                    <div class="input-group">
+                        <input asp-for="Price"
+                               type="number"
+                               step="1000"
+                               min="0"
+                               class="form-control luxury-input"
+                               placeholder="Nhập giá sản phẩm..." />
+                        <span class="input-group-text luxury-addon">VNĐ</span>
+                    </div>
+                    <span asp-validation-for="Price" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label">Mô tả sản phẩm</label>
+                    <textarea asp-for="Description"
+                              class="form-control luxury-input"
+                              rows="5"
+                              placeholder="Mô tả công dụng, thành phần, cách sử dụng..."></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="form-section image-section">
+                <h5><i class="bi bi-image me-2"></i>Hình ảnh sản phẩm</h5>
+
+                <div class="upload-box">
+                    <div class="upload-icon">
+                        <i class="bi bi-cloud-arrow-up-fill"></i>
+                    </div>
+
+                    <p class="upload-title">Tải ảnh từ máy tính</p>
+                    <p class="upload-note">Hỗ trợ JPG, PNG, WEBP</p>
+
+                    <input type="file"
+                           name="imageFile"
+                           class="form-control luxury-file"
+                           accept="image/*" />
+                </div>
+
+                <div class="divider-text">
+                    <span>hoặc</span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="ImageUrl" class="form-label">Link ảnh sản phẩm</label>
+                    <input asp-for="ImageUrl"
+                           class="form-control luxury-input"
+                           placeholder="/images/product.jpg hoặc https://..." />
+                    <span asp-validation-for="ImageUrl" class="text-danger"></span>
+                </div>
+
+                <div class="preview-note">
+                    <i class="bi bi-stars me-2"></i>
+                    Nên dùng ảnh rõ nét, nền sáng, đúng sản phẩm thực tế.
+                </div>
+            </div>
+        </div>
+
+        <div class="action-area">
+            <button type="submit" class="btn-save-product">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                Lưu Sản Phẩm
+            </button>
+
+            <a asp-action="Manage" class="btn-cancel-product">
+                <i class="bi bi-arrow-left-circle me-2"></i>
+                Hủy bỏ
+            </a>
+        </div>
+    </form>
+</div>
+```
+
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+@{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }
 
 <style>
-    .border-gold-card { border: 1px solid rgba(212, 175, 55, 0.3) !important; }
+    body {
+        background: #050505 !important;
+    }
+
+    .product-create-page {
+        min-height: calc(100vh - 80px);
+        padding: 45px 15px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background:
+            radial-gradient(circle at top left, rgba(212,175,55,0.12), transparent 35%),
+            linear-gradient(135deg, #050505, #111);
+    }
+
+    .product-form-card {
+        width: 100%;
+        max-width: 1050px;
+        padding: 35px;
+        border-radius: 28px;
+        background: linear-gradient(145deg, #151515, #222);
+        border: 1px solid rgba(212, 175, 55, 0.45);
+        box-shadow: 0 30px 70px rgba(0,0,0,0.75);
+        color: #fff;
+    }
+
+    .form-header {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding-bottom: 25px;
+        margin-bottom: 28px;
+        border-bottom: 1px solid rgba(212,175,55,0.25);
+    }
+
+    .header-icon {
+        width: 70px;
+        height: 70px;
+        border-radius: 20px;
+        background: linear-gradient(135deg, #d4af37, #f5d76e);
+        color: #111;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+        box-shadow: 0 0 25px rgba(212,175,55,0.35);
+    }
+
+    .form-header h2 {
+        margin: 0;
+        color: #d4af37;
+        font-size: 30px;
+        font-weight: 800;
+    }
+
+    .form-header p {
+        margin: 6px 0 0;
+        color: #bfbfbf;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 25px;
+    }
+
+    .form-section {
+        padding: 25px;
+        border-radius: 22px;
+        background: rgba(255,255,255,0.035);
+        border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .form-section h5 {
+        color: #d4af37;
+        font-weight: 800;
+        margin-bottom: 22px;
+    }
+
+    .form-label {
+        color: #f1d27a;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .luxury-input,
+    .luxury-file {
+        min-height: 48px;
+        border-radius: 14px;
+        border: 1px solid rgba(212,175,55,0.25);
+        background: #2b2b2b;
+        color: #fff;
+        padding: 12px 16px;
+    }
+
+    .luxury-input:focus,
+    .luxury-file:focus {
+        background: #303030;
+        color: #fff;
+        border-color: #d4af37;
+        box-shadow: 0 0 0 3px rgba(212,175,55,0.22);
+    }
+
+    .luxury-input::placeholder {
+        color: #999;
+    }
+
+    .luxury-addon {
+        border-radius: 0 14px 14px 0;
+        border: 1px solid rgba(212,175,55,0.25);
+        background: #d4af37;
+        color: #111;
+        font-weight: 800;
+    }
+
+    .upload-box {
+        padding: 26px;
+        text-align: center;
+        border-radius: 22px;
+        background: linear-gradient(145deg, #111, #262626);
+        border: 1px dashed rgba(212,175,55,0.55);
+    }
+
+    .upload-icon {
+        width: 65px;
+        height: 65px;
+        margin: 0 auto 15px;
+        border-radius: 50%;
+        background: rgba(212,175,55,0.12);
+        color: #d4af37;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 31px;
+    }
+
+    .upload-title {
+        color: #fff;
+        font-weight: 800;
+        margin-bottom: 3px;
+    }
+
+    .upload-note {
+        color: #999;
+        font-size: 13px;
+        margin-bottom: 17px;
+    }
+
+    .divider-text {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 24px 0;
+        color: #bfbfbf;
+        font-size: 13px;
+        text-transform: uppercase;
+    }
+
+    .divider-text::before,
+    .divider-text::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: rgba(212,175,55,0.25);
+    }
+
+    .preview-note {
+        margin-top: 18px;
+        padding: 14px 16px;
+        border-radius: 14px;
+        color: #d4af37;
+        background: rgba(212,175,55,0.08);
+        border: 1px solid rgba(212,175,55,0.2);
+        font-size: 14px;
+    }
+
+    .action-area {
+        display: flex;
+        gap: 14px;
+        margin-top: 28px;
+    }
+
+    .btn-save-product,
+    .btn-cancel-product {
+        flex: 1;
+        text-align: center;
+        padding: 14px;
+        border-radius: 30px;
+        font-weight: 800;
+        text-decoration: none;
+        border: none;
+        transition: 0.25s;
+    }
+
+    .btn-save-product {
+        background: linear-gradient(135deg, #d4af37, #f5d76e);
+        color: #111;
+    }
+
+    .btn-cancel-product {
+        background: transparent;
+        color: #d4af37;
+        border: 1px solid #d4af37;
+    }
+
+    .btn-save-product:hover,
+    .btn-cancel-product:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(212,175,55,0.25);
+    }
+
+    @@media (max-width: 768px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .form-header {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .action-area {
+            flex-direction: column;
+        }
+    }
 </style>

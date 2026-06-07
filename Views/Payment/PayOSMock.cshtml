@@ -1,0 +1,31 @@
+@{
+    ViewData["Title"] = "Mô phỏng Thanh toán VNPay";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <div class="card border-0 shadow-sm rounded-3 p-4">
+                <img src="https://vnpay.vn/s1/statics.vnpay.vn/2023/9/06ncktiwd6dc1694418189687.png" alt="VNPAY Logo" class="img-fluid mb-4" style="max-height: 80px;" />
+                <h3 class="mb-3">Thanh toán qua VNPAY</h3>
+                <p class="text-muted">Đang kết nối tới cổng thanh toán an toàn...</p>
+                <div class="my-4">
+                    <h2 class="text-danger">@string.Format("{0:0,0} VNĐ", ViewBag.Amount)</h2>
+                    <p>Mã đơn hàng: <strong>#@ViewBag.BookingId</strong></p>
+                </div>
+                
+                <form asp-controller="Payment" asp-action="ProcessPayment" method="post">
+                    <!-- Simulate successful payment and fallback to Cash logic or standard success -->
+                    <input type="hidden" name="bookingId" value="@ViewBag.BookingId" />
+                    <input type="hidden" name="amount" value="@ViewBag.Amount" />
+                    <input type="hidden" name="method" value="Cash" /> <!-- Trick to confirm booking for mock -->
+                    
+                    <button type="submit" class="btn btn-success btn-lg w-100">
+                        <i class="bi bi-check-circle me-2"></i> Xác nhận đã thanh toán thành công
+                    </button>
+                    <a href="/" class="btn btn-outline-secondary mt-3">Hủy giao dịch</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

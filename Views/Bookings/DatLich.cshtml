@@ -1,71 +1,537 @@
 @model SalonHair.Models.Booking
 
 @{
-    ViewData["Title"] = "Đặt lịch Salon";
+    ViewData["Title"] = "Đặt lịch salon";
 }
 
-<div class="container py-5">
-    <div class="card shadow-lg mx-auto border-0" style="max-width: 500px; border-radius: 15px;">
-        <div class="card-header bg-warning text-white text-center py-3" style="border-radius: 15px 15px 0 0;">
-            <h2 class="mb-0 fw-bold gold-text"><i class="bi bi-calendar2-check me-2"></i>ĐẶT LỊCH HẸN</h2>
-            <small>Làm đẹp ngay hôm nay!</small>
-        </div>
-        <div class="card-body p-4">
-            <form asp-action="DatLich">
-                <div class="mb-3">
-                    <label class="form-label fw-bold gold-text">Họ và Tên</label>
-                    <input asp-for="CustomerName" class="form-control" placeholder="Nhập tên của bạn" required />
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label fw-bold gold-text">Số điện thoại</label>
-                    <input asp-for="Phone" class="form-control" placeholder="Để salon gọi xác nhận" required />
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label fw-bold gold-text">Chọn Dịch vụ</label>
-                    <select id="service-select" asp-for="ServiceId" class="form-select" asp-items="ViewBag.ServiceId">
-                        <option value="">-- Chọn dịch vụ làm tóc --</option>
-                    </select>
-
-                    <div class="mt-3">
-                        <p class="small gold-text mb-2"><i class="bi bi-stars text-warning me-1"></i> Gợi ý dịch vụ phổ biến:</p>
-                        <div class="d-flex flex-wrap gap-2">
-                            <button type="button" class="btn btn-outline-warning btn-sm service-suggest px-3 py-2" data-name="Cắt tóc nam" style="border-radius: 20px;"><i class="bi bi-scissors me-1"></i> Cắt tóc nam</button>
-                            <button type="button" class="btn btn-outline-warning btn-sm service-suggest px-3 py-2" data-name="Cắt tóc nữ" style="border-radius: 20px;"><i class="bi bi-person-heart me-1"></i> Cắt tóc nữ</button>
-                            <button type="button" class="btn btn-outline-warning btn-sm service-suggest px-3 py-2" data-name="Luxury" style="border-radius: 20px;"><i class="bi bi-palette2 me-1"></i> Nhuộm Luxury</button>
-                            <button type="button" class="btn btn-outline-warning btn-sm service-suggest px-3 py-2" data-name="Uốn" style="border-radius: 20px;"><i class="bi bi-magic me-1"></i> Uốn tóc</button>
-                            <button type="button" class="btn btn-outline-warning btn-sm service-suggest px-3 py-2" data-name="Gội" style="border-radius: 20px;"><i class="bi bi-water me-1"></i> Gội thảo dược</button>
+<div class="booking-page">
+    <section class="booking-hero">
+        <div class="booking-hero__overlay"></div>
+        <div class="container position-relative">
+            <div class="row align-items-center g-4">
+                <div class="col-lg-7">
+                    <div class="d-inline-flex align-items-center gap-2 px-3 py-2 rounded-pill border border-warning-subtle bg-dark bg-opacity-75 text-warning fw-semibold mb-4">
+                        <i class="bi bi-stars"></i>
+                        SalonHair Premium Booking
+                    </div>
+                    <h1 class="display-4 fw-bold text-white mb-3">Đặt lịch nhanh, đẹp mắt, <span class="gold-text">đúng gu bạn</span>.</h1>
+                    <p class="booking-hero__lead mb-4">
+                        Từ cắt tóc chuẩn 30 Shine, nhuộm màu, uốn, chăm sóc đến gội dưỡng, mọi bước đặt lịch đều được tối ưu để trải nghiệm nhanh hơn và chuyên nghiệp hơn.
+                    </p>
+                    <div class="d-flex flex-wrap gap-3">
+                        <a href="#booking-form" class="btn btn-warning btn-lg px-4">Đặt lịch ngay</a>
+                        <a href="@Url.Action("History", "Bookings")" class="btn btn-outline-light btn-lg px-4">Xem lịch sử</a>
+                    </div>
+                    <div class="row mt-4 g-3">
+                        <div class="col-4">
+                            <div class="booking-stat">
+                                <div class="booking-stat__value">4.9★</div>
+                                <div class="booking-stat__label">Độ hài lòng</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="booking-stat">
+                                <div class="booking-stat__value">15+</div>
+                                <div class="booking-stat__label">Dịch vụ nổi bật</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="booking-stat">
+                                <div class="booking-stat__value">24/7</div>
+                                <div class="booking-stat__label">Hỗ trợ đặt lịch</div>
+                            </div>
                         </div>
                     </div>
                 </div>
-
-                <div class="mb-4">
-                    <label class="form-label fw-bold gold-text">Ngày giờ hẹn</label>
-                    <input asp-for="BookingDate" type="datetime-local" class="form-control" required />
+                <div class="col-lg-5">
+                    <div class="booking-preview-card">
+                        <div class="booking-preview-card__header">
+                            <span><i class="bi bi-calendar-check me-2"></i> Lịch đặt nhanh</span>
+                            <span class="badge bg-warning text-dark">Hot</span>
+                        </div>
+                        <div class="booking-preview-card__body">
+                            <div class="booking-preview-card__item">
+                                <i class="bi bi-clock-history"></i>
+                                <div>
+                                    <strong>Chọn khung giờ</strong>
+                                    <p>9:00 - 19:00, cập nhật theo ngày bạn chọn.</p>
+                                </div>
+                            </div>
+                            <div class="booking-preview-card__item">
+                                <i class="bi bi-shield-check"></i>
+                                <div>
+                                    <strong>Xác nhận nhanh</strong>
+                                    <p>Salon sẽ gọi lại để xác nhận lịch hẹn của bạn.</p>
+                                </div>
+                            </div>
+                            <div class="booking-preview-card__item">
+                                <i class="bi bi-stars"></i>
+                                <div>
+                                    <strong>Gợi ý dịch vụ</strong>
+                                    <p>Được hỗ trợ bằng bộ sưu tập dịch vụ và kiểu mẫu phù hợp.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-
-                <div class="d-grid">
-                    <button type="submit" class="btn btn-dark btn-lg">XÁC NHẬN ĐẶT LỊCH</button>
-                </div>
-            </form>
+            </div>
         </div>
-    </div>
+    </section>
+
+    <section class="container py-5">
+        <div class="row g-4 align-items-stretch">
+            <div class="col-lg-4">
+                <div class="info-panel h-100">
+                    <div class="info-panel__header">
+                        <span class="info-panel__eyebrow">Lý do khách chọn</span>
+                        <h2 class="h4 mb-0 mt-3">Trải nghiệm đặt lịch tối ưu</h2>
+                    </div>
+                    <div class="info-panel__body">
+                        <div class="info-item">
+                            <i class="bi bi-calendar2-week"></i>
+                            <div>
+                                <strong>Chọn ngày & giờ dễ dàng</strong>
+                                <p>Hệ thống gợi ý khung giờ phù hợp, hạn chế trùng lịch.</p>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <i class="bi bi-person-vcard"></i>
+                            <div>
+                                <strong>Thông tin khách rõ ràng</strong>
+                                <p>Hỗ trợ lưu tên, số điện thoại, dịch vụ để xác nhận nhanh.</p>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <i class="bi bi-magic"></i>
+                            <div>
+                                <strong>Gợi ý dịch vụ nhanh</strong>
+                                <p>Chỉ cần chạm một lần để tự động chọn dịch vụ mong muốn.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8" id="booking-form">
+                <div class="booking-form-card">
+                    <div class="booking-form-card__header">
+                        <div>
+                            <span class="info-panel__eyebrow">Đặt lịch ngay</span>
+                            <h2 class="h3 mb-1 mt-3">Điền thông tin để Salon xác nhận</h2>
+                            <p class="mb-0 text-muted">Nhanh, rõ ràng, và có gợi ý thời gian để bạn tiết kiệm hơn.</p>
+                        </div>
+                        <div class="booking-form-card__badge">Bảo đảm 100% xác nhận</div>
+                    </div>
+
+                    <form asp-action="DatLich" method="post" class="booking-form" novalidate>
+                        @Html.AntiForgeryToken()
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="CustomerName" class="form-label fw-semibold">Họ và tên</label>
+                                <input asp-for="CustomerName" class="form-control form-control-lg" placeholder="Nhập tên của bạn" required />
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Phone" class="form-label fw-semibold">Số điện thoại</label>
+                                <input asp-for="Phone" class="form-control form-control-lg" placeholder="0909 999 888" required />
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <label class="form-label fw-semibold">Chọn dịch vụ</label>
+                            <select id="service-select" asp-for="ServiceId" class="form-select form-select-lg" asp-items="ViewBag.ServiceId">
+                                <option value="">-- Chọn dịch vụ --</option>
+                            </select>
+                            <div class="service-pills mt-3">
+                                <button type="button" class="service-pill" data-name="Cắt tóc nam"><i class="bi bi-scissors"></i> Cắt tóc nam</button>
+                                <button type="button" class="service-pill" data-name="Cắt tóc nữ"><i class="bi bi-person-heart"></i> Cắt tóc nữ</button>
+                                <button type="button" class="service-pill" data-name="Luxury"><i class="bi bi-palette2"></i> Nhuộm Luxury</button>
+                                <button type="button" class="service-pill" data-name="Uốn"><i class="bi bi-magic"></i> Uốn tóc</button>
+                                <button type="button" class="service-pill" data-name="Gội"><i class="bi bi-water"></i> Gội thảo dược</button>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mt-1">
+                            <div class="col-md-6">
+                                <label asp-for="BookingDate" class="form-label fw-semibold">Ngày hẹn</label>
+                                <input asp-for="BookingDate" id="bookingDate" type="datetime-local" class="form-control form-control-lg" required />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Khung giờ nhanh</label>
+                                <div class="time-slot-grid" id="timeSlotGrid"></div>
+                            </div>
+                        </div>
+
+                        <div class="booking-summary mt-4">
+                            <div>
+                                <p class="mb-1 text-uppercase small text-warning fw-semibold">Tóm tắt đặt lịch</p>
+                                <h3 class="h5 mb-1" id="summaryTitle">Chưa chọn dịch vụ</h3>
+                                <p class="mb-0 text-muted" id="summaryMeta">Vui lòng chọn dịch vụ và thời gian để hoàn tất.</p>
+                            </div>
+                            <div class="booking-summary__badge" id="summaryBadge">Sẵn sàng</div>
+                        </div>
+
+                        <div class="mt-4 d-grid d-md-flex justify-content-between align-items-center gap-3">
+                            <div class="small text-muted">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Sau khi gửi, Salon sẽ liên hệ để xác nhận lịch hẹn.
+                            </div>
+                            <button type="submit" class="btn btn-warning btn-lg px-4">Xác nhận đặt lịch</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
 </div>
 
 @section Scripts {
     <script>
-        document.querySelectorAll('.service-suggest').forEach(button => {
-            button.addEventListener('click', function() {
-                const serviceName = this.getAttribute('data-name');
-                const selectElement = document.getElementById('service-select');
-                for (let i = 0; i < selectElement.options.length; i++) {
-                    if (selectElement.options[i].text.toLowerCase().includes(serviceName.toLowerCase())) {
-                        selectElement.selectedIndex = i;
+        const serviceSelect = document.getElementById('service-select');
+        const bookingDateInput = document.getElementById('bookingDate');
+        const summaryTitle = document.getElementById('summaryTitle');
+        const summaryMeta = document.getElementById('summaryMeta');
+        const summaryBadge = document.getElementById('summaryBadge');
+        const timeSlotGrid = document.getElementById('timeSlotGrid');
+
+        const slotTimes = [
+            '09:00', '10:00', '11:00', '12:00',
+            '13:00', '14:00', '15:00', '16:00',
+            '17:00', '18:00', '19:00'
+        ];
+
+        function formatDateTime(value) {
+            if (!value) return 'Chưa chọn';
+            const date = new Date(value);
+            return new Intl.DateTimeFormat('vi-VN', {
+                weekday: 'long',
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            }).format(date);
+        }
+
+        function getSelectedServiceName() {
+            const selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
+            return selectedOption && selectedOption.value ? selectedOption.text : 'Chưa chọn dịch vụ';
+        }
+
+        function getTodayString() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            return today.toISOString().slice(0, 10);
+        }
+
+        function getMinDateString() {
+            return getTodayString();
+        }
+
+        function isTodaySelected() {
+            if (!bookingDateInput.value) return false;
+            return bookingDateInput.value.slice(0, 10) === getTodayString();
+        }
+
+        function updateTimeSlots() {
+            const now = new Date();
+            const currentHour = now.getHours();
+            const currentMinute = now.getMinutes();
+            const selectedDate = bookingDateInput.value.slice(0, 10) || getTodayString();
+            const isSameDay = selectedDate === getTodayString();
+
+            timeSlotGrid.innerHTML = '';
+            let firstAvailableButton = null;
+
+            slotTimes.forEach(time => {
+                const [hour, minute] = time.split(':').map(Number);
+                const validForToday = !isSameDay || (hour > currentHour) || (hour === currentHour && currentMinute < 45);
+
+                if (!validForToday) {
+                    return;
+                }
+
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'time-slot-btn';
+                button.textContent = time;
+                if (!firstAvailableButton) {
+                    firstAvailableButton = button;
+                }
+                button.addEventListener('click', () => {
+                    bookingDateInput.value = `${selectedDate}T${time}`;
+                    updateSummary();
+                    document.querySelectorAll('.time-slot-btn').forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                });
+                timeSlotGrid.appendChild(button);
+            });
+
+            if (!bookingDateInput.value && firstAvailableButton) {
+                firstAvailableButton.classList.add('active');
+                bookingDateInput.value = `${selectedDate}T${firstAvailableButton.textContent}`;
+            }
+        }
+
+        function updateSummary() {
+            const serviceName = getSelectedServiceName();
+            const dateText = formatDateTime(bookingDateInput.value);
+
+            summaryTitle.textContent = serviceName;
+            summaryMeta.textContent = dateText === 'Chưa chọn' ? 'Vui lòng chọn ngày và khung giờ để hoàn tất.' : `Ngày hẹn: ${dateText}`;
+            summaryBadge.textContent = bookingDateInput.value ? 'Sẵn sàng gửi' : 'Chưa đủ thông tin';
+        }
+
+        bookingDateInput.min = getMinDateString();
+        bookingDateInput.max = (() => {
+            const max = new Date();
+            max.setDate(max.getDate() + 30);
+            return max.toISOString().slice(0, 16);
+        })();
+
+        bookingDateInput.addEventListener('change', () => {
+            updateTimeSlots();
+            updateSummary();
+        });
+
+        serviceSelect.addEventListener('change', updateSummary);
+
+        document.querySelectorAll('.service-pill').forEach(button => {
+            button.addEventListener('click', () => {
+                const serviceName = button.dataset.name;
+                for (let i = 0; i < serviceSelect.options.length; i++) {
+                    if (serviceSelect.options[i].text.toLowerCase().includes(serviceName.toLowerCase())) {
+                        serviceSelect.selectedIndex = i;
                         break;
                     }
                 }
+                updateSummary();
             });
         });
+
+        updateTimeSlots();
+        updateSummary();
     </script>
 }
+
+<style>
+    .booking-page {
+        padding-bottom: 3rem;
+    }
+
+    .booking-hero {
+        position: relative;
+        overflow: hidden;
+        padding: 3.5rem 0;
+        border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+        background:
+            linear-gradient(135deg, rgba(7, 7, 7, 0.96), rgba(12, 12, 12, 0.85)),
+            url('/images/banner-salon.jpg') center/cover no-repeat;
+    }
+
+    .booking-hero__overlay {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at top right, rgba(212, 175, 55, 0.2), transparent 20%);
+        pointer-events: none;
+    }
+
+    .booking-hero__lead {
+        color: rgba(255, 255, 255, 0.82);
+        max-width: 700px;
+        line-height: 1.8;
+    }
+
+    .booking-stat {
+        padding: 1rem;
+        border-radius: 1rem;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        text-align: center;
+    }
+
+    .booking-stat__value {
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: #fff;
+    }
+
+    .booking-stat__label {
+        color: rgba(255, 255, 255, 0.84);
+        font-size: 0.9rem;
+        margin-top: 0.35rem;
+    }
+
+    .booking-preview-card,
+    .info-panel,
+    .booking-form-card {
+        border-radius: 1.5rem;
+        background: linear-gradient(180deg, rgba(20, 20, 20, 0.98), rgba(10, 10, 10, 0.98));
+        border: 1px solid rgba(212, 175, 55, 0.2);
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+    }
+
+    .booking-preview-card {
+        padding: 1.5rem;
+        height: 100%;
+    }
+
+    .booking-preview-card__header,
+    .booking-form-card__header {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: start;
+        margin-bottom: 1.25rem;
+    }
+
+    .booking-preview-card__body {
+        display: grid;
+        gap: 1rem;
+    }
+
+    .booking-preview-card__item {
+        display: flex;
+        gap: 0.85rem;
+        align-items: start;
+        padding: 0.9rem 1rem;
+        border-radius: 1rem;
+        background: rgba(255, 255, 255, 0.03);
+    }
+
+    .booking-preview-card__item i {
+        font-size: 1.2rem;
+        color: var(--gold-primary);
+    }
+
+    .booking-preview-card__item p,
+    .info-item p {
+        margin-bottom: 0;
+        color: rgba(255, 255, 255, 0.72);
+        line-height: 1.7;
+    }
+
+    .info-panel {
+        padding: 1.5rem;
+    }
+
+    .info-panel__eyebrow {
+        padding: 0.4rem 0.9rem;
+        border-radius: 999px;
+        border: 1px solid rgba(212, 175, 55, 0.32);
+        background: rgba(212, 175, 55, 0.08);
+        color: #f3d678;
+        font-size: 0.75rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .info-item {
+        display: flex;
+        gap: 0.85rem;
+        margin-top: 1rem;
+        padding: 1rem;
+        border-radius: 1rem;
+        background: rgba(255, 255, 255, 0.03);
+    }
+
+    .info-item i {
+        font-size: 1.2rem;
+        color: var(--gold-primary);
+    }
+
+    .booking-form-card {
+        padding: 1.5rem;
+    }
+
+    .booking-form-card__badge {
+        padding: 0.6rem 1rem;
+        border-radius: 999px;
+        background: rgba(212, 175, 55, 0.12);
+        border: 1px solid rgba(212, 175, 55, 0.28);
+        color: #f3d678;
+        font-size: 0.85rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .service-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .service-pill {
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 999px;
+        padding: 0.65rem 1rem;
+        background: rgba(255, 255, 255, 0.03);
+        color: #fff;
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+
+    .service-pill:hover,
+    .service-pill:focus-visible {
+        border-color: rgba(212, 175, 55, 0.5);
+        color: #f3d678;
+        transform: translateY(-1px);
+    }
+
+    .time-slot-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.6rem;
+    }
+
+    .time-slot-btn {
+        padding: 0.75rem 0.5rem;
+        border-radius: 0.9rem;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.03);
+        color: #fff;
+        font-weight: 700;
+    }
+
+    .time-slot-btn.active {
+        background: linear-gradient(135deg, #d4af37, #f1c40f);
+        color: #111;
+        border-color: transparent;
+    }
+
+    .booking-summary {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: center;
+        padding: 1rem 1.1rem;
+        border-radius: 1rem;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(212, 175, 55, 0.14);
+    }
+
+    .booking-summary__badge {
+        background: rgba(212, 175, 55, 0.15);
+        color: #f3d678;
+        border-radius: 999px;
+        padding: 0.6rem 1rem;
+        font-weight: 700;
+    }
+
+    @@media (max-width: 768px) {
+        .booking-hero {
+            padding: 2.5rem 0;
+        }
+
+        .booking-form-card__header,
+        .booking-summary {
+            flex-direction: column;
+            align-items: start;
+        }
+
+        .time-slot-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+</style>

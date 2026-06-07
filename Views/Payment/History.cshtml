@@ -1,0 +1,34 @@
+@model IEnumerable<SalonHair.Models.Payment>
+
+@{
+    ViewData["Title"] = "Lịch sử thanh toán";
+}
+
+<h2 class="text-primary mb-4">Lịch sử thanh toán</h2>
+
+<table class="table table-bordered">
+    <thead class="table-dark">
+        <tr>
+            <th>Mã giao dịch</th>
+            <th>Số tiền</th>
+            <th>Phương thức</th>
+            <th>Trạng thái</th>
+            <th>Ngày tạo</th>
+            <th>Ngày thanh toán</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.PaymentId</td>
+                <td>@item.Amount.ToString("N0") VNĐ</td>
+                <td>@item.Method</td>
+                <td>@item.Status</td>
+                <td>@item.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                <td>@item.PaidAt?.ToString("dd/MM/yyyy HH:mm")</td>
+            </tr>
+        }
+    </tbody>
+</table>

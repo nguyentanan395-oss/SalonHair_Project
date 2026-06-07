@@ -1,4 +1,6 @@
+
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SalonHair.Models
 {
@@ -6,6 +8,14 @@ namespace SalonHair.Models
     {
         public int Id { get; set; }
 
+        // ===== FK mới =====
+        [Display(Name = "Khách hàng")]
+        public int? CustomerId { get; set; }
+
+        [ForeignKey("CustomerId")]
+        public Customer? Customer { get; set; }
+
+        // ===== Giữ field cũ để tránh lỗi =====
         [Display(Name = "Tên khách hàng")]
         [Required(ErrorMessage = "Vui lòng nhập tên")]
         public required string CustomerName { get; set; }
@@ -24,6 +34,16 @@ namespace SalonHair.Models
         [Display(Name = "Tổng tiền")]
         public double TotalAmount { get; set; }
 
-        public List<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
+        // Navigation
+        public List<OrderDetail> OrderDetails { get; set; } = new();
+        public virtual Payment? Payment { get; set; }
+
+        public double DiscountAmount { get; set; }
+
+        public double FinalAmount { get; set; }
+
+        public int PointsEarned { get; set; }
+
+        public int PointsUsed { get; set; }
     }
 }

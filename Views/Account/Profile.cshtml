@@ -45,6 +45,10 @@
                     }
                     <form asp-action="UpdateProfile" method="post">
                         <div class="row g-3">
+                            <div class="col-md-12">
+                                <label class="form-label text-secondary small text-uppercase fw-bold">Họ và tên</label>
+                                <input type="text" name="fullName" class="form-control bg-secondary text-white border-0" value="@ViewBag.FullName" placeholder="Nhập họ và tên đầy đủ..." required />
+                            </div>
                             <div class="col-md-6">
                                 <label class="form-label text-secondary small text-uppercase fw-bold">Tên đăng nhập</label>
                                 <input type="text" class="form-control bg-black text-muted border-secondary" value="@Model.Username" readonly />

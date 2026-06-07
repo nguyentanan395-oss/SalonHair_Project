@@ -1,127 +1,585 @@
 @model IEnumerable<SalonHair.Models.Booking>
+
 @{
-    ViewData["Title"] = "Lịch sử hoạt động";
-    var orders = ViewBag.Orders as IEnumerable<SalonHair.Models.Order>;
-    string phone = ViewBag.Phone as string;
+ViewData["Title"] = "Lịch sử hoạt động";
+
+
+var orders = ViewBag.Orders as IEnumerable<SalonHair.Models.Order>;
+bool isAuthenticated = ViewBag.IsAuthenticated as bool? ?? false;
+string? phone = ViewBag.Phone as string;
+string? userName = ViewBag.UserName as string;
+
+var totalBookings = Model?.Count() ?? 0;
+var totalOrders = orders?.Count() ?? 0;
+var totalSpent = orders?.Sum(o => o.TotalAmount) ?? 0;
+
+
 }
 
-<div class="container py-5">
-    <div class="text-center mb-5">
-        <h2 class="text-warning fw-bold text-uppercase"><i class="bi bi-clock-history me-2"></i> Lịch sử hoạt động</h2>
-        @if (!string.IsNullOrEmpty(phone))
-        {
-            <p class="text-secondary">Dữ liệu cho số điện thoại: <span class="text-white fw-bold">@phone</span></p>
-        }
-        <div class="row justify-content-center mt-3">
-            <div class="col-md-4">
-                <form method="get" asp-action="History" class="input-group">
-                    <input type="text" name="phone" class="form-control bg-dark text-white border-warning" placeholder="Nhập số điện thoại để tra cứu..." value="@phone">
-                    <button class="btn btn-warning" type="submit"><i class="bi bi-search"></i></button>
-                </form>
+<div class="history-page">
+    <div class="history-card">
+
+
+    <div class="page-header">
+        <div>
+            <h2>
+                <i class="bi bi-clock-history me-2"></i>
+                Lịch sử hoạt động
+            </h2>
+
+            @if (isAuthenticated)
+            {
+                <p>
+                    Chỉ hiển thị lịch sử của tài khoản:
+                    <span>@userName</span>
+                </p>
+            }
+            else if (!string.IsNullOrEmpty(phone))
+            {
+                <p>
+                    Dữ liệu cho số điện thoại:
+                    <span>@phone</span>
+                </p>
+            }
+            else
+            {
+                <p>Theo dõi lịch đặt dịch vụ và đơn hàng sản phẩm tại SalonHair</p>
+            }
+        </div>
+    </div>
+
+    @if (!isAuthenticated)
+    {
+        <div class="search-box">
+            <form method="get" asp-action="History" class="row g-3 align-items-center">
+                <div class="col-md-10">
+                    <div class="input-group">
+                        <span class="input-group-text search-icon">
+                            <i class="bi bi-search"></i>
+                        </span>
+
+                        <input type="text"
+                               name="phone"
+                               class="form-control luxury-input"
+                               placeholder="Nhập số điện thoại để tra cứu lịch sử..."
+                               value="@phone" />
+                    </div>
+                </div>
+
+                <div class="col-md-2">
+                    <button class="btn-search" type="submit">
+                        Tra cứu
+                    </button>
+                </div>
+            </form>
+        </div>
+    }
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="stat-card">
+                <i class="bi bi-calendar-check-fill"></i>
+                <h3>@totalBookings</h3>
+                <span>Lịch hẹn dịch vụ</span>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="stat-card">
+                <i class="bi bi-bag-check-fill"></i>
+                <h3>@totalOrders</h3>
+                <span>Đơn hàng sản phẩm</span>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="stat-card gold">
+                <i class="bi bi-cash-stack"></i>
+                <h3>@totalSpent.ToString("N0")đ</h3>
+                <span>Tổng chi tiêu</span>
             </div>
         </div>
     </div>
 
-    <div class="row">
-        <!-- Lịch sử đặt lịch -->
-        <div class="col-lg-7 mb-4">
-            <div class="card bg-dark border-secondary shadow h-100">
-                <div class="card-header bg-black border-secondary py-3">
-                    <h4 class="card-title text-warning mb-0"><i class="bi bi-calendar-check me-2"></i> Lịch sử đặt dịch vụ</h4>
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="panel-card">
+                <div class="panel-header">
+                    <h4>
+                        <i class="bi bi-calendar2-check-fill me-2"></i>
+                        Lịch sử đặt dịch vụ
+                    </h4>
                 </div>
-                <div class="card-body p-0">
-                    @if (Model != null && Model.Any())
-                    {
-                        <div class="table-responsive">
-                            <table class="table table-dark table-hover mb-0">
-                                <thead class="table-black">
+
+                @if (Model != null && Model.Any())
+                {
+                    <div class="table-wrapper">
+                        <table class="table table-dark align-middle luxury-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Ngày hẹn</th>
+                                    <th>Dịch vụ</th>
+                                    <th>Khách hàng</th>
+                                    <th class="text-center">Trạng thái</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
                                     <tr>
-                                        <th>Ngày hẹn</th>
-                                        <th>Dịch vụ</th>
-                                        <th>Khách hàng</th>
-                                        <th class="text-center">Trạng thái</th>
+                                        <td>
+                                            <div class="date-box">
+                                                <strong>@item.BookingDate.ToString("dd/MM/yyyy")</strong>
+                                                <small>@item.BookingDate.ToString("HH:mm")</small>
+                                            </div>
+                                        </td>
+
+                                        <td>
+                                            <span class="service-badge">
+                                                <i class="bi bi-scissors me-1"></i>
+                                                @(item.Service?.ServiceName ?? "Dịch vụ")
+                                            </span>
+                                        </td>
+
+                                        <td>
+                                            <div class="customer-info">
+                                                <div class="avatar-circle">
+                                                    @(string.IsNullOrWhiteSpace(item.CustomerName) ? "?" : item.CustomerName.Substring(0, 1).ToUpper())
+                                                </div>
+                                                <span>@item.CustomerName</span>
+                                            </div>
+                                        </td>
+
+                                        <td class="text-center">
+                                            <span class="status-badge">
+                                                <i class="bi bi-check-circle-fill me-1"></i>
+                                                Đã nhận lịch
+                                            </span>
+                                        </td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var item in Model)
-                                    {
-                                        <tr>
-                                            <td class="align-middle">@item.BookingDate.ToString("dd/MM/yyyy HH:mm")</td>
-                                            <td class="align-middle text-warning fw-bold">@item.Service?.ServiceName</td>
-                                            <td class="align-middle text-secondary">@item.CustomerName</td>
-                                            <td class="text-center align-middle">
-                                                <span class="badge bg-info text-dark">Đã nhận lịch</span>
-                                            </td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="p-5 text-center">
-                            <i class="bi bi-calendar-x text-secondary" style="font-size: 3rem;"></i>
-                            <p class="mt-3 text-secondary">Bạn chưa có lịch hẹn nào.</p>
-                            <a href="/Bookings/DatLich" class="btn btn-outline-warning mt-2">Đặt lịch ngay</a>
-                        </div>
-                    }
-                </div>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="empty-box">
+                        <i class="bi bi-calendar-x"></i>
+                        <p>Bạn chưa có lịch hẹn nào.</p>
+                        <a href="/Bookings/DatLich" class="btn-empty">
+                            Đặt lịch ngay
+                        </a>
+                    </div>
+                }
             </div>
         </div>
 
-        <!-- Lịch sử mua hàng -->
-        <div class="col-lg-5 mb-4">
-            <div class="card bg-dark border-secondary shadow h-100">
-                <div class="card-header bg-black border-secondary py-3">
-                    <h4 class="card-title text-success mb-0"><i class="bi bi-bag-check me-2"></i> Đơn hàng sản phẩm</h4>
+        <div class="col-lg-5">
+            <div class="panel-card">
+                <div class="panel-header success-title">
+                    <h4>
+                        <i class="bi bi-bag-check-fill me-2"></i>
+                        Đơn hàng sản phẩm
+                    </h4>
                 </div>
-                <div class="card-body p-0">
-                    @if (orders != null && orders.Any())
-                    {
-                        <div class="list-group list-group-flush bg-transparent">
-                            @foreach (var order in orders)
-                            {
-                                <div class="list-group-item bg-transparent border-secondary text-white py-3">
-                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <h6 class="mb-0 text-info">Đơn hàng #@order.Id</h6>
-                                        <span class="badge bg-success">Hoàn thành</span>
+
+                @if (orders != null && orders.Any())
+                {
+                    <div class="order-list">
+                        @foreach (var order in orders)
+                        {
+                            <div class="order-item">
+                                <div class="order-top">
+                                    <div>
+                                        <h6>
+                                            <i class="bi bi-receipt-cutoff me-1"></i>
+                                            Đơn hàng #@order.Id
+                                        </h6>
+                                        <small>@order.OrderDate.ToString("dd/MM/yyyy HH:mm")</small>
                                     </div>
-                                    <p class="small text-secondary mb-1">Ngày: @order.OrderDate.ToString("dd/MM/yyyy")</p>
-                                    <div class="d-flex justify-content-between">
-                                        <span class="small">Tổng tiền:</span>
-                                        <span class="text-warning fw-bold">@order.TotalAmount.ToString("N0") VNĐ</span>
-                                    </div>
+
+                                    <span class="order-status">
+                                        Hoàn thành
+                                    </span>
                                 </div>
-                            }
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="p-5 text-center">
-                            <i class="bi bi-cart-x text-secondary" style="font-size: 3rem;"></i>
-                            <p class="mt-3 text-secondary">Bạn chưa mua sản phẩm nào.</p>
-                            <a href="/Products" class="btn btn-outline-success mt-2">Mua sắm ngay</a>
-                        </div>
-                    }
-                </div>
+
+                                <div class="order-total">
+                                    <span>Tổng tiền</span>
+                                    <strong>@order.TotalAmount.ToString("N0") VNĐ</strong>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="empty-box">
+                        <i class="bi bi-cart-x"></i>
+                        <p>Bạn chưa mua sản phẩm nào.</p>
+                        <a href="/Products" class="btn-empty success">
+                            Mua sắm ngay
+                        </a>
+                    </div>
+                }
             </div>
         </div>
     </div>
+
+</div>
+
 </div>
 
 <style>
-    .table-dark tbody tr, .list-group-item {
-        transition: all 0.3s ease;
-        border-bottom: 1px solid rgba(255,255,255,0.05);
+    body {
+        background: #050505 !important;
     }
 
-    .table-dark tbody tr:hover, 
-    .list-group-item:hover {
-        background-color: transparent !important;
-        transform: translateY(-4px);
-        box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+    .history-page {
+        min-height: calc(100vh - 80px);
+        padding: 40px 15px;
+        background:
+            radial-gradient(circle at top left, rgba(212,175,55,0.12), transparent 35%),
+            linear-gradient(135deg, #050505, #111);
+    }
+
+    .history-card {
+        max-width: 1250px;
+        margin: auto;
+        padding: 30px;
+        border-radius: 30px;
+        background: linear-gradient(145deg, #151515, #222);
+        border: 1px solid rgba(212,175,55,.42);
+        box-shadow: 0 30px 70px rgba(0,0,0,.72);
+    }
+
+    .page-header {
+        margin-bottom: 24px;
+        padding-bottom: 22px;
+        border-bottom: 1px solid rgba(212,175,55,.22);
+        text-align: center;
+    }
+
+    .page-header h2 {
+        color: #d4af37;
+        font-weight: 900;
+        text-transform: uppercase;
+        margin: 0;
+    }
+
+    .page-header p {
+        margin: 8px 0 0;
+        color: #bfbfbf;
+    }
+
+    .page-header p span {
+        color: #fff;
+        font-weight: 900;
+    }
+
+    .search-box {
+        padding: 18px;
+        margin-bottom: 24px;
+        border-radius: 20px;
+        background: rgba(0,0,0,.28);
+        border: 1px solid rgba(255,255,255,.07);
+    }
+
+    .search-icon {
+        background: #111;
+        border: 1px solid rgba(212,175,55,.22);
+        color: #d4af37;
+        border-radius: 14px 0 0 14px;
+    }
+
+    .luxury-input {
+        min-height: 48px;
+        background: #111;
+        color: #fff;
+        border: 1px solid rgba(212,175,55,.22);
+        border-radius: 0 14px 14px 0;
+    }
+
+    .luxury-input:focus {
+        background: #181818;
+        color: #fff;
+        border-color: #d4af37;
+        box-shadow: 0 0 0 3px rgba(212,175,55,.2);
+    }
+
+    .btn-search {
+        width: 100%;
+        height: 48px;
+        border: none;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #d4af37, #f5d76e);
+        color: #111;
+        font-weight: 900;
+        text-transform: uppercase;
+    }
+
+    .stat-card {
+        height: 130px;
+        padding: 22px;
+        border-radius: 22px;
+        background: rgba(255,255,255,.035);
+        border: 1px solid rgba(212,175,55,.22);
+        color: #fff;
         position: relative;
-        z-index: 2;
+        overflow: hidden;
+    }
+
+    .stat-card i {
+        color: #d4af37;
+        font-size: 30px;
+    }
+
+    .stat-card h3 {
+        margin: 8px 0 0;
+        font-weight: 900;
+        font-size: 29px;
+    }
+
+    .stat-card span {
+        color: #bfbfbf;
+        font-size: 14px;
+    }
+
+    .stat-card::after {
+        content: "";
+        position: absolute;
+        right: -35px;
+        bottom: -35px;
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        border: 1px solid rgba(212,175,55,.22);
+    }
+
+    .stat-card.gold {
+        background: linear-gradient(145deg, rgba(212,175,55,.16), rgba(255,255,255,.035));
+    }
+
+    .panel-card {
+        height: 100%;
+        padding: 0;
+        border-radius: 24px;
+        background: rgba(255,255,255,.035);
+        border: 1px solid rgba(255,255,255,.08);
+        overflow: hidden;
+    }
+
+    .panel-header {
+        padding: 20px 22px;
+        border-bottom: 1px solid rgba(255,255,255,.08);
+        background: rgba(0,0,0,.25);
+    }
+
+    .panel-header h4 {
+        margin: 0;
+        color: #d4af37;
+        font-weight: 900;
+    }
+
+    .panel-header.success-title h4 {
+        color: #75d69c;
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+    }
+
+    .luxury-table thead tr {
+        background: #080808;
+        color: #d4af37;
+        text-transform: uppercase;
+        font-size: 13px;
+        letter-spacing: .6px;
+    }
+
+    .luxury-table th,
+    .luxury-table td {
+        padding: 17px 16px;
+        border-color: rgba(255,255,255,.06);
+    }
+
+    .luxury-table tbody tr:hover {
+        background: rgba(212,175,55,.07) !important;
+    }
+
+    .date-box strong {
+        display: block;
+        color: #fff;
+        font-size: 14px;
+    }
+
+    .date-box small {
+        color: #999;
+        font-weight: 700;
+    }
+
+    .service-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 7px 12px;
+        border-radius: 30px;
+        color: #d4af37;
+        background: rgba(212,175,55,.1);
+        border: 1px solid rgba(212,175,55,.28);
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    .customer-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #fff;
+        font-weight: 800;
+    }
+
+    .avatar-circle {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #d4af37, #f5d76e);
+        color: #111;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 900;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 7px 12px;
+        border-radius: 30px;
+        color: #75d69c;
+        background: rgba(25,135,84,.15);
+        border: 1px solid rgba(25,135,84,.38);
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    .order-list {
+        padding: 16px;
+        display: grid;
+        gap: 14px;
+    }
+
+    .order-item {
+        padding: 17px;
+        border-radius: 18px;
+        background: rgba(0,0,0,.28);
+        border: 1px solid rgba(255,255,255,.07);
+        transition: .2s;
+    }
+
+    .order-item:hover {
+        transform: translateY(-2px);
+        background: rgba(212,175,55,.07);
+        border-color: rgba(212,175,55,.25);
+    }
+
+    .order-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 15px;
+    }
+
+    .order-top h6 {
+        color: #0dcaf0;
+        font-weight: 900;
+        margin: 0;
+    }
+
+    .order-top small {
+        color: #999;
+    }
+
+    .order-status {
+        padding: 6px 11px;
+        border-radius: 30px;
+        color: #75d69c;
+        background: rgba(25,135,84,.15);
+        border: 1px solid rgba(25,135,84,.38);
+        font-size: 12px;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .order-total {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 12px;
+        border-top: 1px solid rgba(255,255,255,.07);
+    }
+
+    .order-total span {
+        color: #bfbfbf;
+    }
+
+    .order-total strong {
+        color: #d4af37;
+    }
+
+    .empty-box {
+        padding: 45px 20px;
+        text-align: center;
+        color: #d4af37;
+    }
+
+    .empty-box i {
+        font-size: 42px;
+        display: block;
+        margin-bottom: 12px;
+    }
+
+    .empty-box p {
+        color: #bfbfbf;
+        margin-bottom: 16px;
+    }
+
+    .btn-empty {
+        display: inline-block;
+        padding: 11px 20px;
+        border-radius: 30px;
+        color: #d4af37;
+        border: 1px solid rgba(212,175,55,.45);
+        text-decoration: none;
+        font-weight: 800;
+    }
+
+    .btn-empty.success {
+        color: #75d69c;
+        border-color: rgba(25,135,84,.45);
+    }
+
+    .btn-empty:hover {
+        background: rgba(212,175,55,.08);
+    }
+
+    .table-dark tbody tr,
+    .list-group-item,
+    .card,
+    .panel-card {
+        transition: none !important;
+    }
+
+    @@media (max-width: 768px) {
+        .history-card {
+            padding: 22px;
+        }
+
+        .order-top,
+        .order-total {
+            flex-direction: column;
+            align-items: flex-start;
+        }
     }
 </style>

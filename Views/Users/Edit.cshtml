@@ -1,0 +1,58 @@
+@model SalonHair.Models.User
+
+@{
+    ViewData["Title"] = "Sửa tài khoản";
+}
+
+<h2>Sửa tài khoản</h2>
+
+<form id="editUserForm" asp-action="Edit" method="post">
+    <input type="hidden" asp-for="Id" />
+
+    <div class="form-group mb-3">
+        <label asp-for="Username"></label>
+        <input asp-for="Username" class="form-control" />
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="Email"></label>
+        <input asp-for="Email" class="form-control" />
+    </div>
+
+    <div class="form-group mb-3">
+        <label>Vai trò</label>
+        <select asp-for="RoleId" class="form-control">
+            @foreach (var role in ViewBag.Roles)
+            {
+                <option value="@role.RoleId">@role.RoleName</option>
+            }
+        </select>
+    </div>
+
+    <div class="form-group mb-3">
+        <label>Ngôn ngữ</label>
+        <input asp-for="Language" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Lưu</button>
+    <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+</form>
+<script>
+document.getElementById("editUserForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    const form = e.target;
+    const formData = new FormData(form);
+
+    const response = await fetch(form.action, {
+        method: "POST",
+        body: formData
+    });
+
+    if (response.ok) {
+        alert("Lưu thay đổi thành công!");
+    } else {
+        alert("Lưu thất bại!");
+    }
+});
+</script>

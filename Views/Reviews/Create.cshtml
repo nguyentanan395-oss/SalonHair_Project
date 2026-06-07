@@ -1,52 +1,318 @@
 @model SalonHair.Models.Review
+
 @{
     ViewData["Title"] = "Đánh giá Dịch vụ";
 }
 
-<div class="row mt-4">
-    <div class="col-md-8 offset-md-2">
-        <div class="card bg-dark border-warning shadow-lg text-light">
-            <div class="card-header border-bottom border-warning py-3 text-center">
-                <h3 class="text-warning fw-bold mb-0"><i class="bi bi-star-fill text-warning me-2"></i> GÓP Ý & ĐÁNH GIÁ DỊCH VỤ</h3>
-                <p class="text-secondary mt-2 mb-0">SalonHair luôn trân trọng mọi ý kiến đóng góp từ quý khách hàng!</p>
+<div class="review-customer-page">
+    <div class="review-box">
+
+        <div class="review-header">
+            <div class="review-logo">
+                <i class="bi bi-scissors"></i>
             </div>
-            <div class="card-body p-4">
-                <form asp-action="Create" method="post">
-                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-
-                    <div class="mb-3">
-                        <label asp-for="CustomerName" class="form-label text-warning fw-bold"></label>
-                        <input asp-for="CustomerName" class="form-control bg-secondary text-light border-0" placeholder="Nhập tên của bạn..." />
-                        <span asp-validation-for="CustomerName" class="text-danger"></span>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label text-warning fw-bold">Mức độ hài lòng (1 - 5 Sao)</label>
-                        <div class="d-flex align-items-center">
-                            <input type="range" asp-for="Rating" class="form-range w-50 me-3" min="1" max="5" step="1" id="ratingRange" oninput="document.getElementById('ratingValue').innerText = this.value" />
-                            <span class="badge bg-warning text-dark fs-5"><span id="ratingValue">5</span> <i class="bi bi-star-fill"></i></span>
-                        </div>
-                        <span asp-validation-for="Rating" class="text-danger"></span>
-                    </div>
-
-                    <div class="mb-4">
-                        <label asp-for="Comment" class="form-label text-warning fw-bold"></label>
-                        <textarea asp-for="Comment" class="form-control bg-secondary text-light border-0" rows="5" placeholder="Chia sẻ trải nghiệm của bạn (nhân viên, chất lượng...)"></textarea>
-                        <span asp-validation-for="Comment" class="text-danger"></span>
-                    </div>
-
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-warning btn-lg fw-bold"><i class="bi bi-send me-1"></i> Gửi Đánh Giá Ngay</button>
-                    </div>
-                </form>
-            </div>
+            <h2>Đánh giá trải nghiệm</h2>
+            <p>
+                Cảm ơn bạn đã lựa chọn dịch vụ tại SalonHair.<br />
+                Ý kiến của bạn là động lực giúp chúng tôi hoàn thiện hơn mỗi ngày.
+            </p>
         </div>
+
+        <form asp-action="Create" method="post" class="review-form">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <!-- Họ và tên -->
+            <div class="form-group mb-4">
+                <label asp-for="CustomerName" class="form-label">Họ và tên</label>
+                <input asp-for="CustomerName"
+                       class="form-control review-input"
+                       placeholder="Nhập tên của bạn..." autocomplete="off" />
+                <span asp-validation-for="CustomerName" class="text-danger fs-14 mt-1 d-block"></span>
+            </div>
+
+            <!-- Đánh giá sao -->
+            <div class="form-group mb-4">
+                <label class="form-label text-center d-block mb-3">Bạn hài lòng như thế nào?</label>
+                
+                <div class="star-rating-container">
+                    <div class="star-rating" id="starRating">
+                        <i class="bi bi-star-fill" data-value="1"></i>
+                        <i class="bi bi-star-fill" data-value="2"></i>
+                        <i class="bi bi-star-fill" data-value="3"></i>
+                        <i class="bi bi-star-fill" data-value="4"></i>
+                        <i class="bi bi-star-fill" data-value="5"></i>
+                    </div>
+                    <div class="rating-text">
+                        Bạn đang chọn <span id="ratingText">5 sao</span>
+                    </div>
+                </div>
+
+                <input type="hidden" asp-for="Rating" id="ratingInput" value="5" />
+                <span asp-validation-for="Rating" class="text-danger fs-14 mt-1 d-block"></span>
+            </div>
+
+            <!-- Nội dung cảm nhận -->
+            <div class="form-group mb-4">
+                <label asp-for="Comment" class="form-label">Chia sẻ cảm nhận</label>
+                <textarea asp-for="Comment"
+                          class="form-control review-textarea"
+                          rows="4"
+                          placeholder="Không gian, tay nghề kỹ thuật viên, thái độ phục vụ..."></textarea>
+                <span asp-validation-for="Comment" class="text-danger fs-14 mt-1 d-block"></span>
+            </div>
+
+            <!-- Nút gửi -->
+            <button type="submit" class="review-submit-btn">
+                <span>Gửi đánh giá ngay</span>
+                <i class="bi bi-arrow-right-short"></i>
+            </button>
+        </form>
+
     </div>
 </div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
     <script>
-        document.getElementById("ratingRange").value = 5;
+        const stars = document.querySelectorAll("#starRating i");
+        const ratingInput = document.getElementById("ratingInput");
+        const ratingText = document.getElementById("ratingText");
+
+        function setRating(value) {
+            stars.forEach(star => {
+                const starValue = parseInt(star.dataset.value);
+
+                if (starValue <= value) {
+                    star.classList.add("active");
+                    star.classList.remove("bi-star");
+                    star.classList.add("bi-star-fill");
+                } else {
+                    star.classList.remove("active");
+                    star.classList.remove("bi-star-fill");
+                    star.classList.add("bi-star");
+                }
+            });
+
+            ratingInput.value = value;
+            ratingText.innerText = value + " sao";
+        }
+
+        stars.forEach(star => {
+            star.addEventListener("click", function () {
+                setRating(parseInt(this.dataset.value));
+            });
+        });
+
+        // Khởi tạo mặc định 5 sao
+        setRating(5);
     </script>
 }
+
+<style>
+    /* Reset & Nền tổng thể phong cách Luxury Dark */
+    body {
+        background: #0a0a0a !important;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .review-customer-page {
+        min-height: calc(100vh - 60px);
+        padding: 60px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: 
+            radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.08), transparent 45%),
+            #0a0a0a;
+    }
+
+    /* Thẻ Box Đánh Giá - Hiệu ứng Glassmorphism mờ mịn */
+    .review-box {
+        width: 100%;
+        max-width: 540px;
+        padding: 45px 40px;
+        border-radius: 24px;
+        background: rgba(18, 18, 18, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8);
+    }
+
+    /* Header tinh chỉnh lại font chữ mảnh và sang hơn */
+    .review-header {
+        text-align: center;
+        margin-bottom: 35px;
+    }
+
+    .review-logo {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 20px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #e5c060, #b88e2f);
+        color: #0a0a0a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 26px;
+        box-shadow: 0 10px 30px rgba(184, 142, 47, 0.2);
+    }
+
+    .review-header h2 {
+        color: #ffffff;
+        font-size: 24px;
+        font-weight: 600;
+        letter-spacing: -0.5px;
+        margin-bottom: 12px;
+    }
+
+    .review-header p {
+        color: #a0a0a0;
+        font-size: 14px;
+        line-height: 1.6;
+        margin: 0;
+        font-weight: 300;
+    }
+
+    /* Form tối giản quy chuẩn */
+    .form-label {
+        color: #e0e0e0;
+        font-size: 14px;
+        font-weight: 500;
+        margin-bottom: 10px;
+        letter-spacing: 0.2px;
+    }
+
+    /* Ô nhập liệu Dark Mode */
+    .review-input,
+    .review-textarea {
+        width: 100%;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.03) !important;
+        color: #ffffff !important;
+        padding: 14px 18px;
+        font-size: 14.5px;
+        transition: all 0.25s ease;
+    }
+
+    .review-input {
+        height: 52px;
+    }
+
+    .review-input::placeholder,
+    .review-textarea::placeholder {
+        color: #555555;
+        font-size: 14px;
+    }
+
+    .review-input:focus,
+    .review-textarea:focus {
+        border-color: #d4af37;
+        background: rgba(255, 255, 255, 0.05) !important;
+        box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
+        outline: none;
+    }
+
+    /* Khu vực chọn số sao - Tối giản tinh tế */
+    .star-rating-container {
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        padding: 20px;
+        text-align: center;
+    }
+
+    .star-rating {
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+        margin-bottom: 12px;
+    }
+
+    .star-rating i {
+        font-size: 28px;
+        color: rgba(255, 255, 255, 0.15);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    /* Màu vàng Gold sáng khi Active */
+    .star-rating i.active {
+        color: #f3cd66;
+        filter: drop-shadow(0 0 8px rgba(243, 205, 102, 0.4));
+    }
+
+    .star-rating i:hover {
+        transform: scale(1.2);
+    }
+
+    .rating-text {
+        color: #888888;
+        font-size: 13px;
+        font-weight: 400;
+    }
+
+    .rating-text span {
+        color: #f3cd66;
+        font-weight: 600;
+    }
+
+    /* Nút gửi thiết kế phẳng hiện đại */
+    .review-submit-btn {
+        width: 100%;
+        border: none;
+        border-radius: 12px;
+        height: 54px;
+        background: linear-gradient(90deg, #e5c060, #b88e2f);
+        color: #0a0a0a;
+        font-size: 15px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 10px;
+    }
+
+    .review-submit-btn i {
+        font-size: 20px;
+        transition: transform 0.25s ease;
+    }
+
+    .review-submit-btn:hover {
+        opacity: 0.95;
+        box-shadow: 0 8px 25px rgba(184, 142, 47, 0.25);
+    }
+
+    .review-submit-btn:hover i {
+        transform: translateX(4px);
+    }
+
+    /* Tiện ích phụ */
+    .fs-14 { font-size: 13px; }
+
+    /* Responsive cho di động mượt mà */
+    @@media (max-width: 576px) {
+        .review-box {
+            padding: 35px 24px;
+            border-radius: 20px;
+        }
+
+        .review-header h2 {
+            font-size: 21px;
+        }
+
+        .star-rating {
+            gap: 12px;
+        }
+
+        .star-rating i {
+            font-size: 24px;
+        }
+    }
+</style>
